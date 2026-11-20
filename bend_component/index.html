@@ -246,7 +246,13 @@ button:disabled{opacity:.45;cursor:not-allowed}
 /* ===== Streamlit bridge: the page talks to Python (and the Neon database) through the component protocol ===== */
 let ARGS={store:{}};let __booted=false;const __pend=new Map();let __rid=0;const __kvT={};
 function __post(m){window.parent.postMessage(Object.assign({isStreamlitMessage:true},m),'*')}
-function __setH(){__post({type:'streamlit:setFrameHeight',height:Math.ceil(document.documentElement.scrollHeight)+4})}
+let __lastH=0;
+function __setH(){
+  /* measure the content (body), never documentElement.scrollHeight: that is at least the iframe's own height, so it would grow forever */
+  const h=Math.ceil(document.body.getBoundingClientRect().height)+2;
+  if(Math.abs(h-__lastH)<2)return;
+  __lastH=h;__post({type:'streamlit:setFrameHeight',height:h});
+}
 function __send(v){__post({type:'streamlit:setComponentValue',value:v,dataType:'json'})}
 /* rpc(type,payload,want): sends a request to Python; with want=true waits for the answer */
 function rpc(type,payload,want){
