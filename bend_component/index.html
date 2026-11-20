@@ -1862,7 +1862,7 @@ $('sbNew').onclick=()=>{
 };
 
 window.__boot=function(){
-if(ARGS.aiEnabled)$('photoBox').style.display='block';
+$('photoBox').style.display='block';if(!ARGS.aiEnabled)drawMsg('Reading drawings needs ANTHROPIC_API_KEY in the app secrets – you can still load a picture.');
 loadTools();
 fillSelects();
 loadState();
