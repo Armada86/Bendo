@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bend Finder</title>
+<style>
+:root{--bg:#f6f7f8;--card:#fff;--ink:#1b1f23;--mute:#5d6670;--line:#d9dde1;--ok:#17703a;--okbg:#e4f4ea;--warn:#8a5a00;--warnbg:#fff1d6;--fail:#a4161a;--failbg:#fde4e4;--na:#5d6670;--nabg:#eceef0;--acc:#1f5fbf;--leg:#e08a1e;--legcur:#c25a00;--tool:#1f5fbf;--die:#9aa3ab}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171a;--card:#1d2125;--ink:#e8ebee;--mute:#9aa4ad;--line:#343a40;--ok:#6fd49a;--okbg:#17301f;--warn:#f2c36b;--warnbg:#38290c;--fail:#ff8d8d;--failbg:#3a1618;--na:#9aa4ad;--nabg:#262b30;--acc:#6aa4ff;--leg:#e9a24a;--legcur:#ffb867;--tool:#6aa4ff;--die:#6d767e}}
+:root[data-theme="dark"]{--bg:#14171a;--card:#1d2125;--ink:#e8ebee;--mute:#9aa4ad;--line:#343a40;--ok:#6fd49a;--okbg:#17301f;--warn:#f2c36b;--warnbg:#38290c;--fail:#ff8d8d;--failbg:#3a1618;--na:#9aa4ad;--nabg:#262b30;--acc:#6aa4ff;--leg:#e9a24a;--legcur:#ffb867;--tool:#6aa4ff;--die:#6d767e}
+*{box-sizing:border-box}
+html{overflow:hidden}body{margin:0 auto;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:12px;max-width:760px}
+h1{font-size:18px;margin:4px 0 2px}
+.sub{color:var(--mute);font-size:13px;margin-bottom:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px}
+.card.c1{border:2px solid #2e7d32}.card.c1>h2{color:#2e7d32}
+.card.c2{border:2px solid #1565c0}.card.c2>h2{color:#1565c0}
+.card.c3{border:2px solid #2e7d32}.card.c3>h2{color:#2e7d32}
+.card.c4{border:2px solid #1565c0}.card.c4>h2{color:#1565c0}
+.card.bcard{border:2px solid #00838f}.card.bcard>h3{color:#00838f}
+h2{font-size:15px;margin:0 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:560px){.grid.g3{grid-template-columns:repeat(3,1fr)}}
+label{display:block;font-size:12px;color:var(--mute)}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 8px;margin-top:2px}
+textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;min-height:90px}
+input[type=checkbox],input[type=radio]{width:auto;margin:0 6px 0 0}
+.chk{display:flex;align-items:center;color:var(--ink);font-size:14px;margin-top:8px}
+details{margin-bottom:12px}
+summary{cursor:pointer;font-weight:600;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+details[open] summary{border-bottom-left-radius:0;border-bottom-right-radius:0}
+details .inner{background:var(--card);border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;padding:12px}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;color:var(--mute);text-align:left;font-weight:600;padding:2px 4px}
+td{padding:3px 4px;vertical-align:middle}
+td.n{width:34px;color:var(--mute);font-size:13px}
+td.x{width:44px}
+td input,td select{margin:0}
+.btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+button{font:inherit;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+button.sm{padding:6px 9px}
+.sbrow{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}.sbrow .nm{flex:1;min-width:0}.sbrow .nm small{display:block;color:var(--mute);font-size:11px}
+details.moreopts{margin-top:8px}details.moreopts>summary{cursor:pointer;font-weight:600;padding:8px 0;color:var(--acc)}
+.note{font-size:12px;color:var(--mute);margin-top:6px}
+.verdict{border-radius:10px;padding:12px;font-weight:600;margin-bottom:12px;font-size:16px}
+.verdict small{display:block;font-weight:400;font-size:13px;margin-top:4px}
+.v-ok{background:var(--okbg);color:var(--ok)}.v-warn{background:var(--warnbg);color:var(--warn)}.v-fail{background:var(--failbg);color:var(--fail)}
+.halves{display:grid;grid-template-columns:1fr 1fr;gap:6px}.halves svg{margin-top:8px}
+.bcard h3{font-size:15px;margin:0 0 6px}
+.nums{font-size:12px;color:var(--mute);margin-bottom:6px}
+.chk-item{display:flex;gap:8px;padding:6px 8px;border-radius:6px;margin-top:4px;font-size:13.5px}
+.chk-item b{white-space:nowrap}
+.l-ok{background:var(--okbg);color:var(--ok)}.l-warn{background:var(--warnbg);color:var(--warn)}.l-fail{background:var(--failbg);color:var(--fail)}.l-na{background:var(--nabg);color:var(--na)}
+.chk-item span.m{color:var(--ink)}
+svg{width:100%;height:auto;background:var(--bg);border:1px solid var(--line);border-radius:8px;margin-top:8px;display:block}
+#ptable tr.selrow td{background:rgba(37,99,235,.10)}
+#preview{width:50%;margin:8px auto 0}
+#toolDiagram{max-height:300px;margin:10px auto 0}
+.bcard details{margin:8px 0 0}
+.bcard summary{font-weight:500;font-size:13px;padding:7px 10px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.err{background:var(--failbg);color:var(--fail);padding:10px;border-radius:8px;margin-bottom:12px}
+.mode{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.mode label{display:flex;align-items:center;color:var(--ink);font-size:14px}
+.stp{display:flex;gap:8px;align-items:center;padding:6px 8px;border:1px solid var(--line);border-radius:8px;margin-top:6px;font-size:14px;flex-wrap:wrap}
+.stp .k{font-weight:700;min-width:54px}
+.stp select{width:auto;min-width:96px}
+.stp .s{margin-left:auto;font-weight:700}
+.fsegrow{display:flex;flex-wrap:nowrap;gap:8px;align-items:flex-start;justify-content:space-between}
+.fsegrow .fseg{flex:0 1 auto;min-width:0}
+@media(max-width:520px){.fsegrow{gap:5px}.fsegrow .fseg button{padding:6px 7px;font-size:12px;white-space:nowrap}}
+.fseg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:8px 0 0;font-size:13px}
+.fseg button{border:0;border-radius:0;background:transparent;padding:6px 12px;color:var(--ink);cursor:pointer}
+.fseg button.on{background:var(--acc);color:#fff;font-weight:600}
+.fnote{font-size:12px;color:var(--mute);margin:4px 0 0}
+.s-ok{color:var(--ok)}.s-warn{color:var(--warn)}.s-fail{color:var(--fail)}
+.blk{border:1px solid var(--fail);border-radius:10px;padding:12px;margin-bottom:12px;background:var(--card)}
+.blk h3{color:var(--fail);font-size:15px;margin:0 0 6px}
+</style>
+</head>
+<body>
+<h1>Bend Finder</h1>
+<div class="sub">MVD iBend C500-6100 · 500 t · bending length 6100 mm · between columns 5100 mm · stroke 310 mm · daylight 550 mm · throat 500 mm · table height 900 mm · Rock 17+ control</div>
+
+<div class="card" id="savedCard">
+<div class="btns" style="margin-top:0"><button id="sbNew">🆕 New</button><button id="sbSave" class="pri">💾 Save bend</button><button id="sbLoad">📂 Load bend</button></div>
+<div id="sbSaveBox" hidden><div class="btns"><input id="sbName" type="text" placeholder="Name, e.g. Job 1234 bracket" style="flex:1;min-width:180px"><button id="sbSaveGo" class="pri sm">Save</button><button id="sbSaveX" class="sm">Cancel</button></div></div>
+<div id="sbList" hidden></div>
+<div class="note" id="sbMsg"></div>
+<div class="card c1">
+<h2>1 · Material</h2>
+<div class="grid g3">
+<label>Units-all<select id="unit"><option value="mm" selected>mm</option><option value="in">inches</option></select></label>
+<label>Preset<select id="mat"><option value="ss">Stainless (typical)</option><option value="ms">Mild steel (typical)</option><option value="al">Aluminium (typical)</option><option value="br">Brass (typical)</option><option value="bz">Bronze (typical)</option><option value="cu">Custom</option></select></label>
+<label>Thickness (<span class="uu">mm</span>)<input id="t" type="text" inputmode="text" autocomplete="off" value="2" placeholder="2 or 0.125 or 1/8"></label>
+<label>Tensile strength (N/mm²)<input id="TS" type="number" value="706"></label>
+<label>Springback allowance (°)<input id="sb" type="number" step="0.5" value="3"></label>
+<label>Bend length (<span class="uu">mm</span>)<input id="L" type="text" inputmode="text" autocomplete="off" value="1000" placeholder="decimal or fraction"></label>
+<label>Required inside radius (<span class="uu">mm</span>) – optional<input id="reqR" type="text" inputmode="text" autocomplete="off" placeholder="not set"></label>
+</div>
+<div class="note" id="tHint" style="margin-top:6px"></div>
+<div class="note">Thickness, bend length and radius accept decimals or fractions – 0.125, 1/8, 3/16, 1 1/2 – and an optional unit (3.2mm, 1/8 in). Thickness 2 mm and bend length 1000 mm are placeholders – set the real values. Switching units converts the numbers already entered. Strength and springback presets are typical values only; use your mill-cert numbers.</div>
+</div>
+
+<div class="card c2">
+<h2>2 · Profile</h2>
+<div id="photoBox" style="display:none;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-bottom:10px">
+<b>Start from a photo of the drawing</b>
+<div class="note" style="margin-top:2px">Take or choose a picture of the profile drawing. Claude reads the leg lengths and angles, fills the table below, then picks tools and a bend sequence. Check the numbers afterwards – you can edit any row.</div>
+<div class="btns"><label class="sm" style="cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:6px 10px">📷 Take photo<input id="drawCam" type="file" accept="image/*" capture="environment" style="display:none"></label><label class="sm" style="cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:6px 10px">🖼 Choose picture<input id="drawFile" type="file" accept="image/*" style="display:none"></label><button id="drawGo" class="pri sm" disabled>Read drawing</button></div>
+<div id="drawPaste" contenteditable="true" role="textbox" aria-label="Paste a picture here" style="margin-top:8px;border:1px dashed var(--line);border-radius:8px;padding:8px;font-size:13px;color:var(--mute);min-height:20px">Or tap and hold here, then Paste a picture</div>
+<img id="drawPrev" alt="" style="display:none;max-width:100%;max-height:180px;margin-top:8px;border-radius:8px;border:1px solid var(--line)">
+<div id="drawMsg" class="note" role="status"></div>
+</div>
+<table id="ptable" style="margin-top:8px"></table>
+<div class="btns" id="profBtns"><button id="addRowStart" class="sm">+ Add segment at start</button><button id="addRow" class="sm">+ Add segment at end</button></div>
+<div class="btns" id="selBtns"><button id="addAbove" class="sm" disabled title="Tap a row in the table first">+ Add segment above selected</button><button id="addBelow" class="sm" disabled title="Tap a row in the table first">+ Add segment below selected</button></div>
+<label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-size:13px"><input type="checkbox" id="autoKeep" style="width:auto"> Keep tools and bend sequence up to date automatically when I change the profile or material</label>
+<div id="keepMsg" class="note" role="status"></div>
+<svg id="preview" viewBox="0 0 100 60" aria-label="Profile preview"></svg>
+<div class="note">Same layout as the controller editor: each row is a segment length, and the angle is the included angle between that segment and the one before it. Positive and negative are the two turn directions, as on the controller (the preview should look like the controller drawing). Lengths are used as typed – no bend deduction.</div>
+<details style="margin:10px 0 0"><summary>Paste rows (length and angle per line)</summary>
+<div class="inner"><textarea id="imp" placeholder="2.000&#10;2.000 90&#10;11.000 90&#10;2.126 90&#10;25.126 -135"></textarea>
+<div class="btns" style="flex-wrap:nowrap"><button id="impBtn" class="sm">Load rows</button><button id="impCopy" class="sm">Copy rows</button></div><div class="btns"><button id="impPick" class="pri sm">Load rows + pick tools and sequence</button></div><div id="impMsg" class="note"></div></div></details>
+</div>
+
+<div class="card c3">
+<h2>3 · Tooling</h2>
+<div class="tcols" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div class="tcol" style="display:flex;flex-direction:column;gap:10px;min-width:0">
+<label>Punch holder<select id="selH" style="width:100%;min-width:0"></select></label>
+<label>Punch<select id="selP" style="width:100%;min-width:0"></select></label>
+</div>
+<div class="tcol" style="display:flex;flex-direction:column;gap:10px;min-width:0">
+<label>Die holder (ES dies only)<select id="selDH" style="width:100%;min-width:0"></select></label>
+<label>Die<select id="selD" style="width:100%;min-width:0"></select></label>
+</div>
+</div>
+<svg id="toolDiagram" role="img" aria-label="Selected punch and die with dimensions"></svg>
+<div class="note" id="toolInfo"></div>
+<div class="btns"><button id="sugBtn" class="pri sm" disabled hidden style="display:none">Suggest tools for this shape</button><span id="sugHint" class="note" style="margin:0"></span></div>
+<div id="sug"></div>
+<details style="margin:10px 0 0"><summary>Add or remove a tool</summary>
+<div class="inner">
+<div class="grid">
+<label>Type<select id="nt_type"><option value="punch">Punch</option><option value="die">Die</option></select></label>
+<label>Name<input id="nt_name" placeholder="e.g. BIU-021"></label>
+</div>
+<div class="grid g3" style="margin-top:8px">
+<label>Angle (°)<input id="nt_ang" type="number" step="any"></label>
+<label>Height (mm)<input id="nt_h" type="number" step="any"></label>
+<label>Max load (kN/m)<input id="nt_max" type="number" step="any"></label>
+<label id="nt_vwrap" style="display:none">V opening (mm)<input id="nt_v" type="number" step="any"></label>
+</div>
+<label style="margin-top:8px">Outline – x,y in mm, one point per line<textarea id="nt_out"></textarea></label>
+<div class="note" id="nt_note"></div>
+<div class="btns"><button id="nt_add" class="pri sm">Add to list</button><button id="nt_delP" class="sm">Remove selected punch</button><button id="nt_delD" class="sm">Remove selected die</button><button id="nt_exp" class="sm">Copy my tools (JSON)</button></div>
+<div class="note" id="nt_msg"></div>
+<div class="note">Tools you add are kept in this browser on this device only. Send me the JSON (or the controller tool screens) and I will build them into the page for good. Punch height, angle and max load are required; the outline is only needed for the collision check.</div>
+</div></details>
+</div>
+
+<div class="card c4">
+<h2>4 · Bend sequence</h2>
+<div class="mode">
+<label><input type="radio" name="mode" value="auto" checked>Auto – suggest the sequence</label>
+<label><input type="radio" name="mode" value="manual">Manual – I choose</label>
+</div>
+<div class="note">Auto tries every order and both sides (front / back) at every step against the punch and die outlines, force, flange, angle, height and throat. It prefers fewer warnings, then fewer turn-overs of the part. "Side" is where the start of the profile (segment 1) goes: front = operator side. Manual lets you set the order and side for each step.</div>
+<div id="seq"></div>
+<div id="outTop"></div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px 0 16px"><button id="useBestBtn" style="background:#2e7d32;border:1px solid #1b5e20;color:#fff;font-size:28px;font-weight:600;padding:22px 52px;border-radius:16px;cursor:pointer;max-width:100%">Auto recalculate</button><span id="recalcMsg" class="note" style="margin:0;text-align:center"></span></div>
+
+<div id="out"></div>
+<div class="btns"><button id="copy" class="pri">Copy summary</button><span id="copied" class="note"></span></div>
+
+<details style="margin-top:12px">
+<summary>Machine &amp; tool values (filled from the tool selection – override if needed)</summary>
+<div class="inner">
+<div class="grid g3">
+<label>Machine force (t)<input id="m_ton" type="number" value="500"></label>
+<label>Bending length (mm)<input id="m_len" type="number" value="6100"></label>
+<label>Between columns (mm)<input id="m_cols" type="number" value="5100"></label>
+<label>Daylight (mm)<input id="m_day" type="number" value="550"></label>
+<label>Throat (mm)<input id="m_throat" type="number" value="500"></label>
+<label>Table height above the floor (mm)<input id="m_tabH" type="number" placeholder="catalog C500-6100: 900"></label>
+<label>Ram front face – distance in front of the bend line (mm) – optional<input id="m_ramF" type="number" placeholder="catalog drawing: 150"></label>
+<label>Table slab front face – distance in front of the bend line (mm) – optional<input id="m_bedF" type="number" placeholder="catalog drawing: 40"></label>
+<label>Table slab back face – distance behind the bend line (mm) – optional<input id="m_bedB" type="number" placeholder="catalog drawing: 41"></label>
+<label>Punch angle (°)<input id="p_ang" type="number" value="86"></label>
+<label>Punch height H (mm)<input id="p_H" type="number" value="163"></label>
+<label>Punch max load (kN/m)<input id="p_max" type="number" value="650"></label>
+<label>Die V opening (mm)<input id="V" type="number" value="22"></label>
+<label>Die angle (°)<input id="d_ang" type="number" value="85"></label>
+<label>Die height (mm)<input id="d_H" type="number" value="60"></label>
+<label>Die max load (kN/m)<input id="d_max" type="number" value="800"></label>
+<label>Punch holder height (mm) – optional<input id="ph_H" type="number" placeholder="from PUN. HOLD. tab"></label>
+<label>Die holder height (mm) – set by the Die holder choice<input id="dh_H" type="number" readonly></label>
+</div>
+<div class="note">Machine: C500-6100 row of the MVD catalog. Tools: BIU-023 (86°, R1, H 163, 0.65 t/cm) and ES-V22 4-V die (85°, 60×60, 0.80 t/cm) from your controller tool screens. Leave the holder heights blank if unknown – the open-height check then says it is incomplete.</div>
+</div>
+</details>
+
+<details>
+<summary>Tool outlines used for collision (filled from the tool selection)</summary>
+<div class="inner">
+<label>Punch BIU-023 outline – x,y in mm, tip at 0,0, y up, +x toward the back of the machine
+<textarea id="punchPts">0,0
+5.83,6.25
+-22,55.25
+-22,127.75
+10,146.75
+10,200
+-10,200
+-10,163
+-49,163
+-47.5,51</textarea></label>
+<label style="margin-top:8px">Die ES-V22 outline – x,y in mm, top shoulder plane at y=0, V22 centred on x=0, body below
+<textarea id="diePts">-30,0
+-11,0
+0,-12
+11,0
+30,0
+30,-12.5
+10.9,-30
+30,-47.5
+30,-60
+8,-60
+0,-51.3
+-8,-60
+-30,-60
+-30,-55
+-2.7,-30
+-30,-5</textarea></label>
+<label class="chk"><input id="toolMirror" type="checkbox">Punch relief (throat) faces the front instead of the back</label>
+<div class="note">Digitised from the MODEL screens on your controller, so expect about ±1.5 mm. Relief toward the back matches your side-on photo of the punch; tick the box if it is mounted the other way. Die outline ignores the 2.5 mm shoulder radius.</div>
+</div>
+</details>
+
+<div class="note" style="margin-top:10px">Assumptions: air bend; force F = (S²·2·TS·L)/(1.4·V) (a 90° air-bend figure); minimum flange ≈ 0.7·V; air-bend inside radius ≈ 0.16·V; segment lengths used as typed. Back gauge: the Universal finger from the controller (10 mm ledge, 10 mm stop, ledge reaches 20.6 mm in front of the stop face); the finger sits on the die top when the part ends over the die and on its ledge when the part reaches past the die. Dies other than ES-V22 are digitised from controller dimensions (shoulder radii ignored); OZU/ES-V16/V35/V50 max loads come from the controller's resistance (t/cm). Punches 9.75in GooseNeck, BIU-226 and BIU-004 are built from the controller's GENERIC model dimensions; BIU-021 is digitised from the controller's picture (approximate). OZU-805 shows 31.50 t/cm on the controller – 1180 kN/m is used instead; Rule: at every bend the bigger part (longer developed length on its side of the bend) goes to the front of the machine, never the back. This is a screening tool – confirm borderline results on the controller and with the tooling data.</div>
+</div>
+
+<script>
+/* ===== Streamlit bridge: the page talks to Python (and the Neon database) through the component protocol ===== */
+let ARGS={store:{}};let __booted=false;const __pend=new Map();let __rid=0;const __kvT={};
+function __post(m){window.parent.postMessage(Object.assign({isStreamlitMessage:true},m),'*')}
+function __setH(){__post({type:'streamlit:setFrameHeight',height:Math.ceil(document.documentElement.scrollHeight)+4})}
+function __send(v){__post({type:'streamlit:setComponentValue',value:v,dataType:'json'})}
+/* rpc(type,payload,want): sends a request to Python; with want=true waits for the answer */
+function rpc(type,payload,want){
+  const id=Date.now().toString(36)+'-'+(++__rid);
+  return new Promise((res,rej)=>{
+    if(want){__pend.set(id,{res,rej});setTimeout(()=>{if(__pend.has(id)){__pend.delete(id);rej(new Error('timeout'))}},90000)}
+    __send({id,type,payload:payload||{},want:!!want});
+    if(!want)res(null);
+  });
+}
+/* small saves (settings, tools): last write wins, debounced */
+function kvSave(key,value){clearTimeout(__kvT[key]);__kvT[key]=setTimeout(()=>{rpc('kv',{key,value},false)},900)}
+function scrollTop0(){try{const d=window.parent.document;const sc=d.querySelector('[data-testid="stMain"]')||d.querySelector('section.main');if(sc)sc.scrollTo({top:0,behavior:'smooth'})}catch(e){}}
+window.addEventListener('message',ev=>{
+  const d=ev.data;if(!d||d.type!=='streamlit:render')return;
+  ARGS=d.args||ARGS;if(!ARGS.store)ARGS.store={};
+  try{const b=d.theme&&d.theme.base;if(b)document.documentElement.setAttribute('data-theme',b==='dark'?'dark':'light')}catch(e){}
+  if(!__booted){__booted=true;window.__boot()}
+  const r=ARGS.resp;
+  if(r&&__pend.has(r.id)){const p=__pend.get(r.id);__pend.delete(r.id);r.error?p.rej(new Error(r.error)):p.res(r)}
+  __setH();
+});
+window.addEventListener('load',()=>{
+  __post({type:'streamlit:componentReady',apiVersion:1});
+  try{new ResizeObserver(__setH).observe(document.body)}catch(e){}
+  __setH();
+});
+function blobToB64(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)})}
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const rad=d=>d*Math.PI/180;
+const G=9.80665;
+const SSTEP=0.6;
+const PRESETS={ss:{TS:706,sb:3},ms:{TS:471,sb:2},al:{TS:353,sb:3},br:{TS:400,sb:2},bz:{TS:294,sb:3}};
+const fm=(x,d=0)=>`${x.toFixed(d)} mm (${(x/25.4).toFixed(2)} in)`;
+
+let rows=[{len:20,ang:null},{len:50,ang:90},{len:150,ang:90},{len:50,ang:90},{len:20,ang:90},{len:20,ang:-90},{len:20,ang:90}];
+let mode='auto';
+let supp={},suppUser={}; /* per bend: true = finger used as a support instead of a back gauge */
+let man={order:[],side:[]};
+let curUnit='mm';
+let lastPlan={order:[],side:[]};
+let lastSummary='';
+const ufac=()=>$('unit').value==='in'?25.4:1;
+
+/* ---------- profile editor ---------- */
+function renderProfile(){
+  let h='<tr><th>#</th><th>Length ('+curUnit+')</th><th>Angle (°, ±)</th><th></th></tr>';
+  rows.forEach((r,i)=>{
+    h+=`<tr><td class="n">${i+1}</td>
+    <td><input type="number" step="any" class="plen" data-i="${i}" value="${isNaN(r.len)?'':r.len}"></td>
+    <td>${i===0?'<input disabled placeholder="—">':`<input type="number" step="any" class="pang" data-i="${i}" value="${isNaN(r.ang)?'':r.ang}">`}</td>
+    <td class="x">${rows.length>2?`<button class="sm del" data-i="${i}" aria-label="Delete segment ${i+1}">✕</button>`:''}</td></tr>`;
+  });
+  $('ptable').innerHTML=h;
+  markRow();
+}
+function markRow(){document.querySelectorAll('#ptable tr').forEach((tr,k)=>tr.classList.toggle('selrow',k-1===selRow));['addAbove','addBelow'].forEach(id=>{const b=$(id);if(b)b.disabled=!(selRow>=0&&selRow<rows.length)})}
+function setSel(i){if(i===selRow)return;selRow=i;markRow();try{drawProfile(readParams())}catch(e){}}
+function readProfile(){
+  document.querySelectorAll('.plen').forEach(e=>{rows[+e.dataset.i].len=parseFloat(e.value)});
+  document.querySelectorAll('.pang').forEach(e=>{rows[+e.dataset.i].ang=parseFloat(e.value)});
+}
+function resetManual(){
+  supp={};suppUser={};
+  const n=rows.length-1;
+  man.order=[...Array(n).keys()];man.side=Array(n).fill(false);
+}
+/* decimals or fractions: 0.125, 1/8, 1 1/2, 1-1/2, 3/16", 3.2mm, 1/8 in – returns the number in the unit currently selected */
+function parseQty(str){
+  let s=String(str==null?'':str).trim().toLowerCase().replace(/[“”″]/g,'"').replace(/,/g,'.');
+  if(!s)return null;
+  let u=null;
+  const m=s.match(/\s*(millimet(?:er|re)s?|mm|inches|inch|in|")\s*$/);
+  if(m){u=/^m/.test(m[1])?'mm':'in';s=s.slice(0,m.index).trim()}
+  let v=null,r;
+  if((r=s.match(/^(\d+)[\s-]+(\d+)\s*\/\s*(\d+)$/))&&+r[3]>0)v=+r[1]+(+r[2])/(+r[3]);
+  else if((r=s.match(/^(\d+)\s*\/\s*(\d+)$/))&&+r[2]>0)v=(+r[1])/(+r[2]);
+  else if(/^\d*\.?\d+$/.test(s)||/^\d+\.$/.test(s))v=parseFloat(s);
+  else if(/\//.test(s))v=null;
+  else{const f=parseFloat(s);v=isNaN(f)?null:f}
+  if(v===null||!isFinite(v))return null;
+  if(u&&u!==curUnit)v=u==='in'?v*25.4:v/25.4;
+  return v;
+}
+const FRACIDS=['t','L','reqR'];
+const num=id=>{const v=FRACIDS.includes(id)?parseQty($(id).value):(()=>{const x=parseFloat($(id).value);return isNaN(x)?null:x})();return v===null||v===undefined?null:v};
+function round(v,u){const f=u==='in'?10000:100;return Math.round(v*f)/f}
+
+function parsePts(txt){
+  const pts=[];
+  txt.split(/[\n;]+/).forEach(l=>{
+    const m=l.trim().split(/[\s,]+/).map(parseFloat);
+    if(m.length>=2&&!isNaN(m[0])&&!isNaN(m[1]))pts.push({x:m[0],y:m[1]});
+  });
+  return pts.length>=3?pts:null;
+}
+function mirrorPts(a){return a&&$('toolMirror').checked?a.map(q=>({x:-q.x,y:q.y})):a}
+function inPoly(pt,poly){
+  let c=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const a=poly[i],b=poly[j];
+    if(((a.y>pt.y)!==(b.y>pt.y))&&(pt.x<(b.x-a.x)*(pt.y-a.y)/(b.y-a.y)+a.x))c=!c;
+  }
+  return c;
+}
+
+function updTHint(){
+  const e=$('tHint');if(!e)return;
+  const v=num('t');
+  if(v===null){e.textContent='';return}
+  const mm=curUnit==='in'?v*25.4:v;
+  e.textContent='Thickness = '+(Math.round(mm*1000)/1000)+' mm = '+(Math.round(mm/25.4*10000)/10000)+' in';
+}
+function readParams(){
+  readProfile();
+  updTHint();
+  const uf=ufac();
+  const P0=readParams0(uf);
+  P0.relax=false;lastBaseSig=sigOf(P0);
+  if(RELAX&&relaxSig!==lastBaseSig)RELAX=false;
+  P0.relax=RELAX;
+  return P0;
+}
+function readParams0(uf){
+  return {
+    mTon:num('m_ton'),mLen:num('m_len'),mCols:num('m_cols'),mDay:num('m_day'),mThroat:num('m_throat'),tabH:num('m_tabH'),ramF:num('m_ramF'),bedF:num('m_bedF'),bedB:num('m_bedB'),
+    pAng:num('p_ang'),pH:num('p_H'),pMax:num('p_max'),V:num('V'),dAng:num('d_ang'),dH:num('d_H'),dMax:num('d_max'),
+    phH:num('ph_H'),dhH:(dhFor(sel.die)||{height:0}).height,dhKnown:true,pNm:sel.punch,dNm:sel.die,dStem:((toolsOf('die').find(t=>t.name===sel.die)||{}).stem)||0,hName:(HOLDERS.find(h=>h.name===sel.holder)||{}).name,hMax:(HOLDERS.find(h=>h.name===sel.holder)||{}).maxLoad||0,
+    t:(num('t')||0)*uf,TS:num('TS'),sb:num('sb')??0,L:(num('L')||0)*uf,reqR:num('reqR')!==null?num('reqR')*uf:null,
+    legs:rows.map(r=>r.len*uf),
+    bends:rows.slice(1).map(r=>({ang:Math.abs(r.ang),dir:r.ang>0?'U':'D',raw:r.ang})),
+    punch:mirrorPts(parsePts($('punchPts').value)),die:mirrorPts(parsePts($('diePts').value))
+  };
+}
+
+/* ---------- geometry: cross-section of the part at one bend stage ---------- */
+function chain(p,idx,formed,side,beta0,d0){
+  const t=p.t,quads=[];
+  let phi=rad(beta0/2),P={x:0,y:-d0};
+  const step=side==='after'?1:-1;
+  let k=side==='after'?idx+1:idx;
+  let j=side==='after'?idx+1:idx-1;
+  while(k>=0&&k<p.legs.length){
+    const len=p.legs[k];
+    const dir={x:Math.cos(phi),y:Math.sin(phi)},n={x:-Math.sin(phi),y:Math.cos(phi)};
+    const Q={x:P.x+len*dir.x,y:P.y+len*dir.y};
+    quads.push({leg:k,pts:[P,Q,{x:Q.x+t*n.x,y:Q.y+t*n.y},{x:P.x+t*n.x,y:P.y+t*n.y}]});
+    if(j<0||j>=p.bends.length)break;
+    const bj=p.bends[j];
+    const defl=formed.has(j)?(180-bj.ang):0;
+    const r=(bj.dir===p.bends[idx].dir)?1:-1;
+    phi+=r*rad(defl);
+    P=Q;k+=step;j+=step;
+  }
+  return quads;
+}
+function stageGeom(p,idx,formed,effAng,flip){
+  const beta=Math.max(0,180-effAng);
+  const d0=(p.V/2)*Math.tan(rad(beta/2));
+  const sides=[];
+  for(const side of ['before','after']){
+    const mirror=(side==='before')!==flip;
+    let quads=chain(p,idx,formed,side,beta,d0);
+    if(mirror)quads=quads.map(q=>({leg:q.leg,pts:q.pts.map(pt=>({x:-pt.x,y:pt.y}))}));
+    sides.push({name:mirror?'front':'back',quads});
+  }
+  const yTip=-d0+p.t/Math.cos(rad(beta/2));
+  return {sides,d0,yTip,beta};
+}
+function ptsOf(side){return side.quads.flatMap(q=>q.pts)}
+
+function distSeg(pt,a,b){const dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy;let u=l2?((pt.x-a.x)*dx+(pt.y-a.y)*dy)/l2:0;u=Math.max(0,Math.min(1,u));return Math.hypot(pt.x-(a.x+u*dx),pt.y-(a.y+u*dy))}
+/* a point inside the polygon, or closer than r to its outline */
+function dieBox(poly){let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;poly.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y)});return{x0:x0-0.8,x1:x1+0.8,y0:y0-0.8,y1:y1+0.8}}
+function nearPoly(pt,poly,r){if(inPoly(pt,poly))return true;for(let i=0,j=poly.length-1;i<poly.length;j=i++)if(distSeg(pt,poly[j],poly[i])<r)return true;return false}
+function sampleHits(quads,poly,ex,tip,vs){
+  vs=vs||[0.2,0.5,0.8];
+  const hits={};
+  for(const q of quads){
+    const [a,b,,c]=q.pts;
+    const lenU=Math.hypot(b.x-a.x,b.y-a.y);
+    const nu=Math.max(2,Math.ceil(lenU/SSTEP));
+    for(let i=0;i<=nu;i++){
+      const u=i/nu;
+      for(const v of vs){
+        const pt={x:a.x+u*(b.x-a.x)+v*(c.x-a.x),y:a.y+u*(b.y-a.y)+v*(c.y-a.y)};
+        if(tip&&Math.hypot(pt.x-tip.x,pt.y-tip.y)<ex)continue;
+        if(inPoly(pt,poly))hits[q.leg]=(hits[q.leg]||0)+1;
+      }
+    }
+  }
+  return hits;
+}
+
+/* ---------- evaluation of one bend in one state ---------- */
+/* Machine section (MVD C-series "Work zone detail" drawing, scaled from the tabulated J daylight / C stroke / E table height; mm from the bend line, +x = back).
+   Ram: front face 150 in front, back face 38 behind; lower face = clamp plane over the clamp (-42..38), 62 higher for the front cover (-150..-42). The side-frame blocks at the machine ends are not modelled.
+   Bed: die holder block 56 in front .. 54 behind, 87 tall, die sits directly on top of it (no overlap); table slab below it 40 in front .. 41 behind (down to the floor). */
+const MACH={ramFront:150,ramBack:38,apronX:42,shelfUp:62,blkF:56,blkB:54,blkH:87,seat:0,holderF:40,holderB:30,slabF:40,slabB:41};
+const ramPlane=(p,yTip)=>yTip+(p.pH>0?p.pH:163)+(p.phH>0?p.phH:0);
+function ramLow(x,p,yTip){
+  /* the ram has the same thickness all along its height: front face at -apronX, back face at ramBack */
+  /* the punch holder hangs below the clamp plane: nothing may stand up into it either */
+  const hy=ramPlane(p,yTip)-(p.phH>0?p.phH:0);
+  if(p.phH>0&&x>=-MACH.holderF&&x<=MACH.holderB)return hy;
+  if(x<-MACH.apronX||x>MACH.ramBack)return null;
+  return ramPlane(p,yTip);
+}
+/* a die without a holder pushes its lower stem (if it has one) into the table slot, so the table top is that much higher */
+const dieSeat=p=>(p.dhH>0?0:(p.dStem||0));
+const bedTop=p=>-((p.dH>0?p.dH:60)+(p.dhH||0)-dieSeat(p)-MACH.seat);
+const floorY=p=>bedTop(p)-(p.tabH>0?p.tabH:900);
+function bedHitAt(x,y,p){
+  const yb=bedTop(p),sf=p.bedF>0?p.bedF:MACH.slabF,sb=p.bedB>0?p.bedB:MACH.slabB;
+  if(p.dhH>0){
+    const h=DHOLDERS[0],yd=-(p.dH>0?p.dH:60),ax=Math.abs(x);
+    if(ax<h.halfW&&y<yd+h.lugH&&y>yb&&(y<yd||ax>h.slotHW))return true;
+  }
+  if(y<yb&&y>yb-MACH.blkH&&x>-MACH.blkF&&x<MACH.blkB)return true;
+  return y<=yb-MACH.blkH&&x>-sf&&x<sb;
+}
+function evalBend(p,idx,formed,flip){
+  const b=p.bends[idx],C=[];
+  const add=(lvl,title,msg)=>C.push({lvl,title,msg});
+  const {t,V,TS,L}=p;
+  const Fm=t*t*2*TS/(1.4*V);
+  const Ft=Fm*L/1000,tons=Ft/G;
+  const nm={Fm,Ft,tons};
+
+  if(Fm>p.pMax)add('fail','Punch load',`${Fm.toFixed(0)} kN/m exceeds the punch limit of ${p.pMax} kN/m.`);
+  else if(Fm>0.85*p.pMax)add('warn','Punch load',`${Fm.toFixed(0)} kN/m is ${(100*Fm/p.pMax).toFixed(0)}% of the ${p.pMax} kN/m punch limit.`);
+  else add('ok','Punch load',`${Fm.toFixed(0)} kN/m vs ${p.pMax} kN/m limit (${(100*Fm/p.pMax).toFixed(0)}%).`);
+  if(p.hMax>0&&Fm>p.hMax)add('fail','Punch holder load',`${Fm.toFixed(0)} kN/m exceeds the ${p.hName} holder limit of ${p.hMax} kN/m.`);
+  if(p.dMax>0){
+    if(Fm>p.dMax)add('fail','Die load',`${Fm.toFixed(0)} kN/m exceeds the die limit of ${p.dMax} kN/m.`);
+    else add('ok','Die load',`${Fm.toFixed(0)} kN/m vs ${p.dMax} kN/m die limit.`);
+  }else add('na','Die load','Die max load not entered – not tested.');
+  const mk=p.mTon*G;
+  if(Ft>mk)add('fail','Machine force',`${tons.toFixed(1)} t needed over ${fm(L)}; machine is ${p.mTon} t.`);
+  else if(Ft>0.8*mk)add('warn','Machine force',`${tons.toFixed(1)} t of ${p.mTon} t (${(100*Ft/mk).toFixed(0)}%).`);
+  else add('ok','Machine force',`${tons.toFixed(1)} t of ${p.mTon} t.`);
+  if(L>p.mLen)add('fail','Length',`Bend length ${fm(L)} exceeds bending length ${p.mLen} mm.`);
+
+  const ratio=V/t;
+  if(ratio<6)add('fail','V opening',`V${V} is only ${ratio.toFixed(1)}× thickness (min ≈ 6×). Use a larger V (≥ ${Math.ceil(6*t)} mm).`);
+  else if(ratio<8)add('warn','V opening',`V${V} is ${ratio.toFixed(1)}× thickness – on the tight side (8× is the usual target); high force, more marking.`);
+  else if(ratio>12)add('warn','V opening',`V${V} is ${ratio.toFixed(1)}× thickness – wide; large radius and long minimum flange.`);
+  else add('ok','V opening',`V${V} is ${ratio.toFixed(1)}× thickness.`);
+  const rAir=0.16*V;nm.rAir=rAir;
+  if(p.reqR>0&&p.reqR<0.8*rAir)add('warn','Inside radius',`V${V} air bend gives ≈ ${rAir.toFixed(1)} mm; ${p.reqR.toFixed(1)} mm needs a smaller V or bottoming (much higher force).`);
+
+  const bmin=0.7*V;nm.bmin=bmin;
+  let flOk=true;
+  [idx,idx+1].forEach(k=>{
+    const l=p.legs[k];
+    if(l<bmin){flOk=false;add('fail',`Segment ${k+1} length`,`${fm(l,1)} is under the minimum flange ≈ ${fm(bmin,1)} for V${V}. A V of ≤ ${Math.floor(l/0.7)} mm would hold it.`)}
+  });
+  if(flOk)add('ok','Flange lengths',`Both adjacent segments ≥ ${bmin.toFixed(1)} mm.`);
+
+  const effAng=Math.max(20,b.ang-p.sb);
+  const minTool=Math.max(p.pAng,p.dAng||0);
+  if(b.ang>=180||b.ang<=0)add('fail','Angle','Angle must be between 0 and 180°.');
+  else if(effAng<minTool)add('fail','Angle',`${b.ang}° less ${p.sb}° springback allowance = ${effAng}°, tighter than the ${minTool}° tooling.`);
+  else add('ok','Angle',`${b.ang}° needs ≈ ${effAng}° overbend; tooling is ${minTool}°.`);
+
+  const g=stageGeom(p,idx,formed,effAng,flip);
+  const open=stageGeom(p,idx,formed,180,flip);
+  const sideOf=(Gm,n)=>Gm.sides.find(s=>s.name===n);
+  const hOf=s=>Math.max(...ptsOf(s).map(q=>q.y));
+  const hBack=hOf(sideOf(open,'back')),hFront=hOf(sideOf(open,'front'));
+  if(p.dH>0){
+    const gap=p.mDay-p.pH-(p.phH||0)-(p.dH-dieSeat(p))-(p.dhH||0);
+    const nh=(p.phH>0&&(p.dhH>0||p.dhKnown))?'':' (holder heights not included)';
+    if(hBack>gap){
+      const alt=hFront<=gap?' The other side puts the tall segment to the front.':' It does not fit either way round.';
+      add('fail','Open height',`Back-side part stands ${fm(hBack)} above the die; open gap is ${fm(gap)}${nh}.${alt}`);
+    }else if(hBack>gap-15)add('warn','Open height',`Back-side part ${fm(hBack)} vs open gap ${fm(gap)}${nh} – very little clearance.`);
+    else add(nh?'na':'ok','Open height',`Tallest standing part ${fm(Math.max(hBack,hFront))}; open gap ${fm(gap)}${nh}${nh?' – enter holder heights to confirm':''}.`);
+  }else add('na','Open height','Enter the die height to test against daylight.');
+
+  const reachOf=s=>Math.max(...ptsOf(s).map(q=>Math.abs(q.x)));
+  const rb=reachOf(sideOf(open,'back')),rf=reachOf(sideOf(open,'front'));
+  if(p.L>p.mCols){
+    if(rb>p.mThroat){
+      const alt=rf<=p.mThroat?' The other side puts the long segment to the front.':'';
+      add('fail','Throat',`Bend is longer than the columns (${p.mCols} mm), so the back side must fit the ${p.mThroat} mm throat; it reaches ${fm(rb)}.${alt}`);
+    }else add('ok','Throat',`Back reach ${fm(rb)} ≤ ${p.mThroat} mm throat.`);
+  }
+
+  /* RULE: the bigger part (longer developed length on its side of the bend) always goes to the FRONT of the machine */
+  let bigBad=false;
+  {
+    const dev=sd=>sd.quads.reduce((a,q)=>a+p.legs[q.leg],0);
+    const lb=dev(sideOf(open,'back')),lf=dev(sideOf(open,'front'));
+    if(lb>lf*1.02+1){bigBad=true;add(p.relax?'warn':'fail','Bigger part at back',`The bigger part (${fm(lb)}) is on the back side and the smaller (${fm(lf)}) in front. Rule: the bigger part always goes to the front.${p.relax?' No sequence could keep it in front, so this step breaks the rule – hold the part carefully or use Support.':''}`)}
+    else add('ok','Bigger part in front',`Front side ${fm(lf)} vs back side ${fm(lb)}.`);
+  }
+  const dnPts=[].concat(...g.sides.map(s=>ptsOf(s))).filter(q=>q.y<-3&&Math.abs(q.x)>V/2+1);
+  if(dnPts.length&&!p.die)add('warn','Legs below die plane','A formed segment points down beside the die – confirm it clears the die body and table (enter the die outline to test).');
+
+  /* ram (upper beam) at the bottom of the stroke: nothing may stand up into its lower faces */
+  const hitsRam={};
+  {
+    g.sides.forEach(sd=>sd.quads.forEach(q=>{
+      const [P,Q,Q2,P2]=q.pts;
+      [[P,Q],[P2,Q2]].forEach(([A,B])=>{
+        for(let i=0;i<=40&&!hitsRam[q.leg];i++){
+          const u=i/40,x=A.x+u*(B.x-A.x),y=A.y+u*(B.y-A.y),lo=ramLow(x,p,g.yTip);
+          if(lo!==null&&y>lo)hitsRam[q.leg]=1;
+        }
+      });
+    }));
+    const ks=Object.keys(hitsRam);
+    if(ks.length)add('fail','Ram clearance',`Segment ${ks.map(k=>+k+1).join(', ')} runs into the punch holder or ram (clamp plane ${fm(ramPlane(p,g.yTip))} above the die top at the bottom of the stroke).`);
+    else add('ok','Ram clearance','Clear of the punch holder and ram.');
+  }
+  /* machine bed: die holder block and table slab under the die – checked with the part flat on the die (before the stroke), at three angles on the way down, and at the bottom */
+  const hitsBed={},hitsFloor={};
+  {
+    const stages=[open,g];
+    for(let k=1;k<=3;k++){try{stages.push(stageGeom(p,idx,formed,180-(180-effAng)*k/4,flip))}catch(e){}}
+    stages.forEach(gs=>gs.sides.forEach(sd=>sd.quads.forEach(q=>{
+      const [P,Q]=q.pts;
+      for(let i=0;i<=40&&!hitsBed[q.leg];i++){
+        const u=i/40;
+        if(bedHitAt(P.x+u*(Q.x-P.x),P.y+u*(Q.y-P.y),p))hitsBed[q.leg]=1;
+      }
+      for(let i=0;i<=40&&!hitsFloor[q.leg];i++){
+        const u=i/40;
+        if(P.y+u*(Q.y-P.y)<floorY(p))hitsFloor[q.leg]=1;
+      }
+    })));
+    const kf=Object.keys(hitsFloor);
+    if(kf.length)add('fail','Floor',`Segment ${kf.map(k=>+k+1).join(', ')} would reach the floor (table is ${fm(p.tabH>0?p.tabH:900)} above it). The long leg must not hang down – start from the other side or change the order.`);
+    else add('ok','Floor','Clear of the floor.');
+    const ks=Object.keys(hitsBed);
+    if(ks.length)add('fail','Machine bed',`Segment ${ks.map(k=>+k+1).join(', ')} hangs down into the machine table under the die. Bend this one from the other side, or in a different order, so the long leg stays in front of the table.`);
+    else add('ok','Machine bed','Clear of the table.');
+  }
+  const bgO=bgOK(p,open),suO=supportOK(p,open);
+  if(!bgO&&!suO)add('fail','Back gauge','The back gauge finger would run into the part here, and the support ledge does not fit either (it would hit the die or the part).');
+  else if(!bgO)add('ok','Back gauge','The back gauge finger would run into the part here – the finger is used as a support instead.');
+  const tip={x:0,y:g.yTip};
+  const ex=3*t+4;
+  const hits={};
+  Object.keys(hitsRam).forEach(k=>{hits[k]='ram '});
+  if(p.punch){
+    const poly=p.punch.map(q=>({x:q.x,y:q.y+g.yTip}));
+    let any=false;
+    g.sides.forEach(s=>{
+      const h=sampleHits(s.quads,poly,ex,tip);
+      const ks=Object.keys(h);
+      ks.forEach(k=>{hits[k]=(hits[k]||'')+'punch '});
+      if(ks.length){any=true;add('fail','Punch collision',`Segment ${ks.map(k=>+k+1).join(', ')} (${s.name} side) runs into the punch.`)}
+    });
+    if(!any)add('ok','Punch collision','No overlap with the punch outline.');
+  }else add('na','Punch collision','Punch outline not entered – not tested.');
+  if(p.die){
+    let any=false;
+    /* checked with the part flat on the die (before the stroke), on the way down, and at the bottom */
+    const dstages=[open,g];
+    for(let k=1;k<=3;k++){try{dstages.push(stageGeom(p,idx,formed,180-(180-effAng)*k/4,flip))}catch(e){}}
+    const dh={};
+    dstages.forEach(gs=>gs.sides.forEach(s=>{
+      const h=sampleHits(s.quads,p.die,0,null,[0.04,0.5,0.96]);
+      Object.keys(h).forEach(k=>{if(!dh[k])dh[k]={side:s.name,st:gs}});
+      /* a segment further out than the two next to the bend must not even touch the die (e.g. a formed flange hanging onto the shoulder) */
+      s.quads.forEach(q=>{
+        if((gs!==open&&gs!==g)||q.leg===idx||q.leg===idx+1||dh[q.leg])return;
+        const [a,b,,c]=q.pts,L=Math.hypot(b.x-a.x,b.y-a.y),nu=Math.max(2,Math.ceil(L/1.5));
+        const bb=dieBox(p.die);
+        for(let i=0;i<=nu&&!dh[q.leg];i++){const u=i/nu;
+          for(const v of [0,0.5,1]){
+            const pt={x:a.x+u*(b.x-a.x)+v*(c.x-a.x),y:a.y+u*(b.y-a.y)+v*(c.y-a.y)};
+            if(pt.x>bb.x0&&pt.x<bb.x1&&pt.y>bb.y0&&pt.y<bb.y1&&nearPoly(pt,p.die,0.8)){dh[q.leg]={side:s.name,st:gs,touch:true};break}
+          }}
+      });
+    }));
+    Object.keys(dh).forEach(k=>{hits[k]=(hits[k]||'')+'die '});
+    {const ks=Object.keys(dh);
+      if(ks.length){any=true;const sn=[...new Set(ks.map(k=>dh[k].side))].join('/');add('fail','Die collision',`Segment ${ks.map(k=>+k+1).join(', ')} (${sn} side) runs into (or touches) the die${ks.every(k=>dh[k].st===open)?' while the sheet is lying on it':''}.`)}}
+    if(!any)add('ok','Die collision','No overlap with the die outline.');
+  }else add('na','Die collision','Die outline not entered – not tested.');
+
+  Object.keys(hitsBed).forEach(k=>{hits[k]=(hits[k]||'')+'bed '});
+  Object.keys(hitsFloor).forEach(k=>{hits[k]=(hits[k]||'')+'floor '});
+  Object.keys(hitsRam).forEach(k=>{hits[k]=(hits[k]||'')+'ram '});
+  return {C,g,open,hits,bgOK:bgO,supOK:suO,num:nm,effAng,fails:C.filter(c=>c.lvl==='fail'),warnN:C.filter(c=>c.lvl==='warn').length,bigBad};
+}
+
+/* ---------- evaluator with cache, and the sequence planner ---------- */
+function makeEv(p){
+  const cache=new Map();
+  return (i,mask,fl)=>{
+    const k=i+':'+mask+':'+(fl?1:0);
+    let r=cache.get(k);
+    if(!r){
+      const formed=new Set();
+      for(let j=0;j<p.bends.length;j++)if(mask>>j&1)formed.add(j);
+      r=evalBend(p,i,formed,fl);cache.set(k,r);
+    }
+    return r;
+  };
+}
+function plan(p,ev){
+  const n=p.bends.length;
+  let layer=new Map([['0|-1',{cost:0,prev:null,mask:0,side:-1}]]);
+  const layers=[layer];
+  for(let k=0;k<n;k++){
+    const next=new Map();
+    for(const st of layer.values()){
+      for(let i=0;i<n;i++){
+        if(st.mask>>i&1)continue;
+        for(const fl of [false,true]){
+          const r=ev(i,st.mask,fl);
+          if(r.fails.length)continue;
+          const dEnd=Math.min(i,n-1-i);
+          /* handling: turning the part around (end for end) is easy, flipping it upside down is not.
+             Bends on both sides of the part are done first (ends), then the inside ones; same-direction bends are grouped so the part is flipped as little as possible. */
+          const dir=p.bends[i].dir;
+          let c=st.cost+r.warnN*10+(r.bigBad?25:0)+(fl?0.01:0)+i*0.0001*(k+1)+3.5*dEnd*(n-k);
+          if(st.side!==-1){
+            if(dir!==st.dir)c+=4;                    /* flip upside down */
+            else if((fl?1:0)!==st.side)c+=1;         /* turn around */
+          }
+          const nmk=st.mask|(1<<i),key=nmk+'|'+(fl?1:0)+'|'+dir;
+          const ex=next.get(key);
+          if(!ex||c<ex.cost)next.set(key,{cost:c,prev:st,i,fl,mask:nmk,side:fl?1:0,dir});
+        }
+      }
+    }
+    if(!next.size)break;
+    layers.push(next);layer=next;
+  }
+  const depth=layers.length-1;
+  let best=null;
+  for(const st of layers[depth].values())if(!best||st.cost<best.cost)best=st;
+  const order=[],side=[];
+  let s=best;
+  while(s&&s.prev){order.unshift(s.i);side.unshift(s.fl);s=s.prev}
+  return {full:depth===n,depth,order,side,mask:best.mask};
+}
+const INTRINSIC=t=>['Punch load','Die load','Machine force','Length','V opening','Angle'].includes(t)||/^Segment \d+ length$/.test(t);
+
+/* ---------- drawing ---------- */
+/* Universal finger from the controller (mm): ledge H1 under the sheet, stop block H2 above it, ledge reaches L2 in front of the stop face, body L1 long */
+const FINGER={H1:10,H2:10,L1:360,L2:20.57};
+function dieTopOf(p){return p.die?Math.max(...p.die.filter(q=>q.y>=-0.01).map(q=>q.x)):30}
+/* support finger: the ledge goes under the sheet, so the part must reach past the die's top surface */
+function supportOK(p,gB){
+  const g=gaugeOf(p,gB);
+  if(!g||!(g.x>dieTopOf(p)+0.01))return false;
+  /* the ledge reaches L2 in front of the stop face; it sits below the sheet, so it may not run into the die */
+  if(g.x-FINGER.L2<dieTopOf(p)-0.05)return false;
+  /* the ledge (under the sheet, reaching L2 in front of the stop face) must not run into any part of the formed sheet, e.g. a leg hanging down behind the die */
+  const lx=Math.max(dieTopOf(p),g.x-FINGER.L2),back=gB.sides.find(sd=>sd.name==='back');
+  if(!back)return true;
+  for(const q of back.quads){
+    const P=q.pts;
+    for(let e=0;e<P.length;e++){
+      const A=P[e],B=P[(e+1)%P.length];
+      for(let i=0;i<=24;i++){
+        const u=i/24,x=A.x+u*(B.x-A.x),y=A.y+u*(B.y-A.y);
+        if(x>lx+0.05&&x<g.x-0.3&&y<-0.05&&y>-FINGER.H1)return false;
+      }
+    }
+  }
+  return true;
+}
+function gaugeOf(p,gB){
+  /* finger position: the furthest back edge of the sheet resting on the die (points at table level) */
+  const back=gB.sides.find(sd=>sd.name==='back');
+  if(!back||!back.quads.length)return null;
+  const t=p.t;
+  let best=null;
+  back.quads.forEach(q=>q.pts.forEach(pt=>{
+    if(pt.y>=-0.01&&pt.y<=t+0.01&&(!best||pt.x>best.x))best={x:pt.x,leg:q.leg};
+  }));
+  if(!best){
+    back.quads.forEach(q=>q.pts.forEach(pt=>{if(!best||pt.x>best.x)best={x:pt.x,leg:q.leg}}));
+  }
+  return best?{x:best.x,leg:best.leg}:null;
+}
+/* ---------- long parts: a long leg is shortened on screen and shown with a break mark ---------- */
+const LONG_THR=220,LONG_SHOW=140;
+function breakMark(c,u,n,sw){
+  const hw=sw*8,gl=sw*10,f=v=>v.toFixed(2),pt=(a,b)=>({x:c.x+u.x*a+n.x*b,y:c.y+u.y*a+n.y*b});
+  const P1=pt(-gl/2,-hw),P2=pt(gl/2,-hw),P3=pt(gl/2,hw),P4=pt(-gl/2,hw),S=q=>f(q.x)+','+f(-q.y);
+  const tick=e=>{const a=pt(e*gl/2-sw*2.5,-hw-sw*1.5),b=pt(e*gl/2+sw*2.5,hw+sw*1.5);return `<line x1="${f(a.x)}" y1="${f(-a.y)}" x2="${f(b.x)}" y2="${f(-b.y)}" stroke="var(--ink)" stroke-width="${f(sw*1.2)}"/>`};
+  const A=pt(-gl/2,0),B=pt(gl/2,0);
+  return `<polygon points="${S(P1)} ${S(P2)} ${S(P3)} ${S(P4)}" fill="var(--bg)"/>`+tick(-1)+tick(1)+`<line x1="${f(A.x)}" y1="${f(-A.y)}" x2="${f(B.x)}" y2="${f(-B.y)}" stroke="var(--leg)" stroke-width="${f(sw*1.3)}" stroke-dasharray="${f(sw*2.2)} ${f(sw*2.2)}"/>`;
+}
+/* display copy of a bend geometry (see below) */
+function dispGeom(g){
+  /* a long segment is drawn only part-way with a break mark (two slashes); everything beyond it is left out of the picture.
+     Nothing is moved, so whatever is drawn is exactly where the real part is (never pulled into the tools). */
+  const marks=[];
+  const sides=g.sides.map(sd=>{
+    const quads=[];
+    for(const q of sd.quads){
+      const [P,Q,R,T]=q.pts,L=Math.hypot(Q.x-P.x,Q.y-P.y)||1,u={x:(Q.x-P.x)/L,y:(Q.y-P.y)/L};
+      if(L>LONG_THR){
+        // shown length LONG_SHOW from the bend end
+        const Qs={x:P.x+u.x*LONG_SHOW,y:P.y+u.y*LONG_SHOW},Rs={x:T.x+u.x*LONG_SHOW,y:T.y+u.y*LONG_SHOW};
+        const tl=Math.hypot(T.x-P.x,T.y-P.y)||1,nn={x:(T.x-P.x)/tl,y:(T.y-P.y)/tl};
+        const at=LONG_SHOW*0.72;
+        marks.push({c:{x:P.x+u.x*at+(T.x-P.x)/2,y:P.y+u.y*at+(T.y-P.y)/2},u,n:nn});
+        quads.push({leg:q.leg,pts:[P,Qs,Rs,T],cut:true});
+        break;
+      }
+      quads.push(q);
+    }
+    return {name:sd.name,quads};
+  });
+  return Object.assign({},g,{sides,marks});
+}
+/* the part drawn as ONE connected strip with rounded bends (centre line + corner arcs), not separate rectangles */
+function sheetSvg(p,g,idx,hits,sw){
+  const t=p.t,rIn=Math.max(0.8*t,0.16*p.V),rc=rIn+t/2;
+  const mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2});
+  const segs=[];
+  g.sides[0].quads.slice().reverse().forEach(q=>segs.push({leg:q.leg,S:mid(q.pts[1],q.pts[2]),E:mid(q.pts[0],q.pts[3])}));
+  g.sides[1].quads.forEach(q=>segs.push({leg:q.leg,S:mid(q.pts[0],q.pts[3]),E:mid(q.pts[1],q.pts[2])}));
+  segs.forEach(sg=>{const L=Math.hypot(sg.E.x-sg.S.x,sg.E.y-sg.S.y)||1;sg.u={x:(sg.E.x-sg.S.x)/L,y:(sg.E.y-sg.S.y)/L};sg.L=L});
+  const n=segs.length,V=[segs[0].S];
+  for(let k=1;k<n;k++){
+    const a=segs[k-1],b=segs[k],cr=a.u.x*b.u.y-a.u.y*b.u.x;
+    if(Math.abs(cr)<1e-6){V.push(mid(a.E,b.S));continue}
+    const w={x:b.S.x-a.S.x,y:b.S.y-a.S.y},ta=(w.x*b.u.y-w.y*b.u.x)/cr;
+    V.push({x:a.S.x+ta*a.u.x,y:a.S.y+ta*a.u.y});
+  }
+  V.push(segs[n-1].E);
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const cut=[0],U=[];
+  for(let k=1;k<n;k++){
+    const a=segs[k-1].u,b=segs[k].u,dot=Math.max(-1,Math.min(1,a.x*b.x+a.y*b.y)),th=Math.acos(dot);
+    let c=th<1e-4?0:rc*Math.tan(th/2);
+    c=Math.min(c,0.45*dist(V[k-1],V[k]),0.45*dist(V[k],V[k+1]));
+    cut.push(c);
+  }
+  cut.push(0);
+  const P=q=>q.x.toFixed(2)+','+(-q.y).toFixed(2);
+  const along=(k,from,dd,sign)=>({x:V[from].x+sign*segs[k].u.x*dd,y:V[from].y+sign*segs[k].u.y*dd});
+  let d='M'+P(V[0]);
+  const parts=[];
+  for(let k=0;k<n;k++){
+    const A=along(k,k,cut[k],1),B=along(k,k+1,cut[k+1],-1);
+    parts.push({leg:segs[k].leg,A,B});
+    d+=' L'+P(B);
+    if(k<n-1){const C=V[k+1],N=along(k+1,k+1,cut[k+1],1);d+=' Q'+P(C)+' '+P(N)}
+  }
+  const tipK=g.sides[0].quads.length; /* corner between the two sides = the bend being made */
+  let o=`<path d="${d}" fill="none" stroke="var(--leg)" stroke-width="${t}" stroke-linejoin="round" stroke-linecap="butt"/>`;
+  const line=(A,B,col)=>`<line x1="${A.x.toFixed(2)}" y1="${(-A.y).toFixed(2)}" x2="${B.x.toFixed(2)}" y2="${(-B.y).toFixed(2)}" stroke="${col}" stroke-width="${t}" stroke-linecap="butt"/>`;
+  const arc=(k,col)=>{const C=V[k],A=along(k-1,k,cut[k],-1),N=along(k,k,cut[k],1);return `<path d="M${P(A)} Q${P(C)} ${P(N)}" fill="none" stroke="${col}" stroke-width="${t}" stroke-linecap="butt"/>`};
+  parts.forEach((pt,k)=>{
+    const cur=pt.leg===idx||pt.leg===idx+1,hit=hits&&hits[pt.leg];
+    if(hit)o+=line(pt.A,pt.B,'var(--fail)');else if(cur)o+=line(pt.A,pt.B,'var(--legcur)');
+  });
+  for(let k=1;k<n;k++){
+    const a=segs[k-1].leg,b=segs[k].leg;
+    const hit=hits&&(hits[a]||hits[b]);
+    if(hit)o+=arc(k,'var(--fail)');else if(k===tipK)o+=arc(k,'var(--legcur)');
+  }
+  (g.marks||[]).forEach(m=>{o+=breakMark(m.c,m.u,m.n,sw)});
+  return o;
+}
+/* back gauge: the finger ledge (10 mm, bottom level with the die top) sits behind the part edge, the stop block (10 mm) above it starts 20.57 mm behind the stop face.
+   The part must not run into either. (The die cannot be hit: the finger bottom is the die-top plane.) */
+function bgOK(p,gB){
+  const g=gaugeOf(p,gB);
+  if(!g)return true;
+  const gx=g.x,hL=FINGER.H1,hT=FINGER.H1+FINGER.H2,x2=gx+FINGER.L2;
+  const inFinger=(x,y)=>x>gx+0.3&&y>0.05&&y<hT&&(y<hL||x>x2);
+  for(const sd of gB.sides){
+    for(const q of sd.quads){
+      const P=q.pts;
+      let mx=-1e9,my=-1e9,ny=1e9;P.forEach(a=>{mx=Math.max(mx,a.x);my=Math.max(my,a.y);ny=Math.min(ny,a.y)});
+      if(mx<=gx+0.3||ny>=hT||my<=0.05)continue;
+      const [a,b,,c]=P,L=Math.hypot(b.x-a.x,b.y-a.y),nu=Math.max(2,Math.ceil(L/1.5));
+      for(let i=0;i<=nu;i++){const u=i/nu;
+        for(const v of [0,0.5,1]){if(inFinger(a.x+u*(b.x-a.x)+v*(c.x-a.x),a.y+u*(b.y-a.y)+v*(c.y-a.y)))return false}}
+    }
+  }
+  return true;
+}
+function drawStage(p,idx,r){
+  const gA=dispGeom(r.g),gB=dispGeom(r.open),gBt=r.open,t=p.t;
+  const LIFT=Math.max(30,t*6);
+  const yB=gB.yTip+LIFT;
+  const gau=gaugeOf(p,gB),gauT=gaugeOf(p,gBt),sup=!!supp[idx];
+  const die=p.die||null;
+  const punchAt=(y)=>p.punch?p.punch.map(q=>({x:q.x,y:q.y+y})):null;
+  const FH=Math.max(FINGER.H2,t+3),FSHOW=Math.min(FINGER.L1,60);
+  /* shared bounds so both halves have the same scale */
+  let xs=[-p.V,p.V],ys=[0,gA.yTip+10,yB+10];
+  [gA,gB].forEach(g=>{const ap=[].concat(...g.sides.map(sd=>ptsOf(sd)));xs=xs.concat(ap.map(q=>q.x));ys=ys.concat(ap.map(q=>q.y))});
+  [[gA.yTip],[yB]].forEach(([y])=>{const pu=punchAt(y);if(pu){const pv=pu.filter(q=>q.y<=y+90);xs=xs.concat(pv.map(q=>q.x));ys=ys.concat(pv.map(q=>q.y))}});
+  if(die){xs=xs.concat(die.map(q=>q.x));ys=ys.concat(die.map(q=>q.y))}
+  xs.push(-MACH.ramFront,MACH.blkB+40);ys.push(bedTop(p)-MACH.blkH-70,ramPlane(p,gA.yTip)+70);
+  if(gau){xs.push(gau.x+FSHOW);ys.push(-FINGER.H1,Math.max(FH,FINGER.H1+FINGER.H2))}
+  let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const padx=(x1-x0)*0.06+5,pady=(y1-y0)*0.06+5;
+  x0-=padx;x1+=padx;y0-=pady;y1+=pady+14;
+  let W=x1-x0,H=y1-y0;
+  const fs=Math.max(W,H)/26;
+  if(gau){const need=gau.x+fs*(sup?11:8);if(need>x1){x1=need;W=x1-x0}}
+  y1+=fs*0.4;y0-=fs*1.8;H=y1-y0;
+  const sw=Math.max(W,H)/500;
+  const poly=a=>a.map(q=>`${q.x.toFixed(2)},${(-q.y).toFixed(2)}`).join(' ');
+  const panel=(g,yTip,before,title)=>{
+    let o=`<svg viewBox="${x0.toFixed(1)} ${(-y1).toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}" role="img" aria-label="Bend ${idx+1} ${title}">`;
+    {
+      const yb=bedTop(p),sf=p.bedF>0?p.bedF:MACH.slabF,sb=p.bedB>0?p.bedB:MACH.slabB,yk=yb-MACH.blkH;
+      const bp=[[-MACH.blkF,yb],[MACH.blkB,yb],[MACH.blkB,yk],[sb,yk],[sb,floorY(p)],[-sf,floorY(p)],[-sf,yk],[-MACH.blkF,yk]];
+      o+=`<polygon points="${bp.map(q=>q[0].toFixed(1)+','+(-q[1]).toFixed(1)).join(' ')}" fill="var(--die)" opacity="0.18" stroke="var(--die)" stroke-width="${sw*0.8}" stroke-dasharray="${sw*4} ${sw*3}"/>`;
+      const rf=p.ramF>0?p.ramF:MACH.ramFront,pl=ramPlane(p,yTip),T=pl+700;
+      const rp=[[-MACH.apronX,T],[MACH.ramBack,T],[MACH.ramBack,pl],[-MACH.apronX,pl]];
+      o+=`<polygon points="${rp.map(q=>q[0].toFixed(1)+','+(-q[1]).toFixed(1)).join(' ')}" fill="var(--tool)" opacity="0.10" stroke="var(--tool)" stroke-width="${sw*0.8}" stroke-dasharray="${sw*4} ${sw*3}"/>`;
+    }
+    if(p.phH>0){
+      const hy0=ramPlane(p,yTip)-p.phH,hy1=ramPlane(p,yTip),hF=MACH.holderF,hB=MACH.holderB;
+      o+=`<rect x="${-hF}" y="${(-hy1).toFixed(1)}" width="${hF+hB}" height="${p.phH}" fill="var(--tool)" opacity="0.38" stroke="var(--tool)" stroke-width="${sw}"/>`;
+    }
+    if(p.dhH>0){
+      const h=DHOLDERS[0],y1=-p.dH,y0=y1-h.height,lg=y1+h.lugH;
+      const hp=[[-h.halfW,y0],[h.halfW,y0],[h.halfW,lg],[h.slotHW,lg],[h.slotHW,y1],[-h.slotHW,y1],[-h.slotHW,lg],[-h.halfW,lg]];
+      o+=`<polygon points="${hp.map(q=>q[0].toFixed(1)+','+(-q[1]).toFixed(1)).join(' ')}" fill="var(--die)" opacity="0.38" stroke="var(--die)" stroke-width="${sw}"/>`;
+    }
+    o+=`<text x="${(x0+fs*0.4).toFixed(2)}" y="${(-(yTip+Math.min(p.pH>0?p.pH:100,150)*0.55)).toFixed(2)}" font-size="${(fs*0.85).toFixed(2)}" fill="var(--tool)">${p.pNm||''}</text><text x="${(x0+fs*0.4).toFixed(2)}" y="${(-(-(p.dH>0?p.dH:60)*0.5)+fs*0.3).toFixed(2)}" font-size="${(fs*0.85).toFixed(2)}" fill="var(--die)">${p.dNm||''}</text>`;
+    if(die)o+=`<polygon points="${poly(die)}" fill="var(--die)" opacity="0.55" stroke="var(--die)" stroke-width="${sw}"/>`;
+    else o+=`<line x1="${x0}" y1="0" x2="${x1}" y2="0" stroke="var(--die)" stroke-width="${sw*1.5}" stroke-dasharray="${sw*6} ${sw*4}"/>`;
+    const pu=punchAt(yTip);
+    if(pu)o+=`<polygon points="${poly(pu)}" fill="var(--tool)" opacity="0.25" stroke="var(--tool)" stroke-width="${sw*1.5}"${before?` stroke-dasharray="${sw*5} ${sw*3}"`:''}/>`;
+    else o+=`<polygon points="0,${-yTip} ${-8},${-yTip-8/Math.tan(rad(p.pAng/2))} ${8},${-yTip-8/Math.tan(rad(p.pAng/2))}" fill="none" stroke="var(--tool)" stroke-width="${sw*1.5}"/>`;
+    o+=sheetSvg(p,g,idx,!before?r.hits:{},sw);
+    /* bend line (V centre) */
+    o+=`<line x1="0" y1="${-(yTip+8)}" x2="0" y2="${-(-p.V*0.9)}" stroke="var(--mute)" stroke-width="${sw*0.8}" stroke-dasharray="${sw*8} ${sw*4}" opacity="0.7"/>`;
+    if(before&&gau){
+      const gx=gau.x,dieTop=dieTopOf(p),bx1=gx+FSHOW;
+      const hL=FINGER.H1,hT=FINGER.H1+FINGER.H2;
+      let fp,bad=false;
+      if(!sup){
+        /* back gauge: the front face of the ledge is the stop – the part edge hits it. Ledge sits at sheet level (bottom on the die plane) */
+        fp=[[gx,0],[bx1,0],[bx1,hT],[gx+FINGER.L2,hT],[gx+FINGER.L2,hL],[gx,hL]];
+      }else{
+        /* support: the part rests ON the ledge and its edge hits the step face behind the ledge */
+        bad=!supportOK(p,gBt);
+        const lx=gx-FINGER.L2;
+        fp=[[lx,-FINGER.H1],[bx1,-FINGER.H1],[bx1,FH],[gx,FH],[gx,0],[lx,0]];
+      }
+      const yTop=Math.max(...fp.map(q=>q[1])),yBot=Math.min(...fp.map(q=>q[1])),fcol=bad?'var(--fail)':'var(--acc)';
+      o+=`<polygon points="${fp.map(q=>q[0].toFixed(2)+','+(-q[1]).toFixed(2)).join(' ')}" fill="${fcol}" fill-opacity="0.9"/>`;
+      /* break mark: the finger body is 360 long, only the near end is drawn */
+      o+=`<polygon points="${(bx1-sw*3).toFixed(2)},${-(yTop+sw*3)} ${(bx1+sw*3).toFixed(2)},${-(yTop+sw*3)} ${(bx1+sw*3).toFixed(2)},${-(yBot-sw*3)} ${(bx1-sw*3).toFixed(2)},${-(yBot-sw*3)}" fill="var(--bg)"/>`;
+      const dy=-(yTop+fs*1.1);
+      o+=`<line x1="0" y1="${dy}" x2="${gx.toFixed(2)}" y2="${dy}" stroke="${fcol}" stroke-width="${sw*1.2}"/>`;
+      [0,gx].forEach(xx=>o+=`<line x1="${xx.toFixed(2)}" y1="${dy-fs*0.35}" x2="${xx.toFixed(2)}" y2="${dy+fs*0.35}" stroke="${fcol}" stroke-width="${sw*1.2}"/>`);
+      o+=`<text x="${(gx+fs*0.3).toFixed(2)}" y="${(dy+fs*0.35).toFixed(2)}" font-size="${fs*0.95}" fill="${fcol}" font-weight="700">${sup?'SUPPORT':'BG'} ${(gauT?gauT.x:gx).toFixed(1)} mm</text>`;
+      if(gauT&&gauT.x>gx+1)o+=breakMark({x:gx/2,y:-dy},{x:1,y:0},{x:0,y:1},sw*0.8);
+      o+=`<text x="${(gx+fs*0.3).toFixed(2)}" y="${(dy-fs*1.1).toFixed(2)}" font-size="${fs*0.8}" fill="var(--mute)">${sup?(bad?'support not possible - ledge hits die/part':`seg ${gau.leg+1} on support`):`seg ${gau.leg+1} on gauge`}</text>`;
+    }
+    o+=`<text x="${x0+fs*0.3}" y="${-y1+fs*1.1}" font-size="${fs*0.9}" fill="var(--mute)">◀ FRONT</text>`;
+    o+=`<text x="${x1-fs*0.3}" y="${-y1+fs*1.1}" font-size="${fs*0.9}" fill="var(--mute)" text-anchor="end">BACK ▶</text>`;
+    o+=`<text x="${((x0+x1)/2).toFixed(1)}" y="${(-y0-fs*0.5).toFixed(1)}" font-size="${fs*1.05}" fill="var(--ink)" font-weight="700" text-anchor="middle">${title}</text>`;
+    return o+`</svg>`;
+  };
+  return `<div class="halves">${panel(gB,yB,true,'BEFORE bend')}${panel(gA,gA.yTip,false,'AFTER bend')}</div>`;
+}
+function fingerSeg(i,extra=''){
+  const s=!!supp[i];
+  return `<div class="fsegrow">${extra}<div class="fseg" role="group" aria-label="Back finger use"><button data-b="${i}" data-fg="0" class="${s?'':'on'}">Back gauge</button><button data-b="${i}" data-fg="1" class="${s?'on':''}">Support</button></div></div>`;
+}
+let selRow=-1;
+function drawProfile(p){
+  const pts=[{x:0,y:0}],pmarks=[];
+  let h=90;
+  /* a leg far longer than the rest is drawn shorter, with a break mark */
+  const srt=p.legs.filter(x=>x>0).sort((a,b)=>a-b),med=srt.length?srt[Math.floor(srt.length/2)]:20;
+  const pThr=Math.max(250,6*med),pShow=Math.max(100,5*med);
+  for(let i=0;i<p.legs.length;i++){
+    const q=pts[pts.length-1];
+    const dl=p.legs[i]>pThr?pShow:p.legs[i];
+    if(dl!==p.legs[i])pmarks.push({c:{x:q.x+dl/2*Math.cos(rad(h)),y:q.y+dl/2*Math.sin(rad(h))},u:{x:Math.cos(rad(h)),y:Math.sin(rad(h))},n:{x:-Math.sin(rad(h)),y:Math.cos(rad(h))}});
+    pts.push({x:q.x+dl*Math.cos(rad(h)),y:q.y+dl*Math.sin(rad(h))});
+    if(i<p.bends.length){const b=p.bends[i];h+=(180-b.ang)*(b.dir==='U'?1:-1)}
+  }
+  const xs=pts.map(q=>q.x),ys=pts.map(q=>q.y);
+  let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const m=Math.max(x1-x0,y1-y0,1)*0.08+3;
+  x0-=m;x1+=m;y0-=m;y1+=m;
+  const W=x1-x0,H=y1-y0,sc=Math.max(W,H),fs=sc/28;
+  const pl=pts.map(q=>`${q.x.toFixed(2)},${(-q.y).toFixed(2)}`).join(' ');
+  let s=`<polyline points="${pl}" fill="none" stroke="var(--leg)" stroke-width="${Math.max(p.t,sc/220)}" stroke-linejoin="round" stroke-linecap="round"/>`;
+  if(selRow>=0&&selRow<p.legs.length){const a=pts[selRow],c=pts[selRow+1];
+    s+=`<line x1="${a.x.toFixed(2)}" y1="${(-a.y).toFixed(2)}" x2="${c.x.toFixed(2)}" y2="${(-c.y).toFixed(2)}" stroke="var(--acc)" stroke-width="${Math.max(p.t*2.2,sc/90)}" stroke-linecap="round" opacity="0.9"/>`}
+  s+=`<circle cx="${pts[0].x}" cy="${-pts[0].y}" r="${fs*0.45}" fill="var(--ok)"/>`;
+  for(let i=0;i<p.bends.length;i++){
+    const q=pts[i+1];
+    s+=`<circle cx="${q.x.toFixed(2)}" cy="${(-q.y).toFixed(2)}" r="${fs*0.7}" fill="var(--card)" stroke="var(--acc)" stroke-width="${sc/400}"/><text x="${q.x.toFixed(2)}" y="${(-q.y+fs*0.33).toFixed(2)}" font-size="${fs*0.9}" text-anchor="middle" fill="var(--ink)">${i+1}</text>`;
+  }
+  pmarks.forEach(m=>{s+=breakMark(m.c,m.u,m.n,sc/330)});
+  const sv=$('preview');
+  sv.setAttribute('viewBox',`${x0.toFixed(1)} ${(-y1).toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}`);
+  sv.innerHTML=s;
+}
+
+/* ---------- main ---------- */
+const sideName=fl=>fl?'BACK':'FRONT';
+const sym={ok:'✔',warn:'⚠',fail:'✖',na:'–'};
+function bendLabel(p,i){const b=p.bends[i];return `bend ${i+1} (${b.ang}° ${b.raw>0?'+':'−'})`}
+
+function renderSeqPanel(p,steps,evOpt){
+  const n=p.bends.length;
+  if(mode==='manual'){
+    let h='';
+    for(let k=0;k<n;k++){
+      let opts='';for(let i=0;i<n;i++)opts+=`<option value="${i}"${man.order[k]===i?' selected':''}>Bend ${i+1} (${p.bends[i].ang}° ${p.bends[i].raw>0?'+':'−'})</option>`;
+      h+=`<div class="stp"><span class="k">Step ${k+1}</span><select class="sbend" data-k="${k}">${opts}</select>
+      <select class="sside" data-k="${k}"><option value="F"${!man.side[k]?' selected':''}>Start at FRONT</option><option value="B"${man.side[k]?' selected':''}>Start at BACK</option></select><span class="s" data-st="${k}"></span></div>`;
+    }
+    $('seq').innerHTML=h;
+  }
+}
+function setStepStatus(k,cls,txt){
+  const e=document.querySelector(`[data-st="${k}"]`);
+  if(e){e.className='s '+cls;e.textContent=txt}
+}
+
+function rowsText(){return rows.map((r,i)=>i===0||r.ang===null||r.ang===undefined||isNaN(r.ang)?String(r.len):r.len+' '+r.ang).join('\n')}
+let impDirty=false; /* box edited by hand and not loaded yet: do not overwrite it */
+function syncImp(){
+  const e=$('imp');if(!e||impDirty||document.activeElement===e)return;
+  try{readProfile()}catch(x){}
+  e.value=rowsText();
+}
+function calc(){
+  syncImp();
+  renderToolDiagram();
+  const p=readParams();
+  const out=$('out');$('outTop').innerHTML='';
+  const errs=[];
+  ['t','TS','V','L','pAng','pH','pMax','mTon','mLen','mCols','mDay','mThroat'].forEach(k=>{if(!(p[k]>0))errs.push(`Enter a valid value for ${k==='t'?'thickness':k==='L'?'bend length':k}.`)});
+  const missing=[];
+  rows.forEach((r,i)=>{
+    if(!(r.len>0))missing.push(`segment ${i+1} length`);
+    if(i>0){
+      if(isNaN(r.ang))missing.push(`segment ${i+1} angle`);
+      else if(!(Math.abs(r.ang)>0&&Math.abs(r.ang)<180))errs.push(`Segment ${i+1}: angle must be between 0 and 180 (use − for the other direction).`);
+    }
+  });
+  if(rows.length<2)errs.push('Add at least two segments.');
+  if(missing.length){
+    setSug(false);
+    $('seq').innerHTML='';$('preview').innerHTML='';lastSummary='';
+    out.innerHTML=`<div class="card"><div class="note" style="margin-top:0">Fill in the profile above – still missing: ${missing.join(', ')}. Delete (✕) any rows you don't need or add more. Results appear here as soon as every row is filled.</div></div>`;
+    return;
+  }
+  if(errs.length){setSug(false);$('seq').innerHTML='';out.innerHTML=`<div class="err">${errs.join('<br>')}</div>`;lastSummary='';return}
+  drawProfile(p);
+  const n=p.bends.length;
+  setSug(n<=10,n>10?'Tool suggestions handle up to 10 bends.':'');
+  if(sugSig!==null&&sugSig!==sigOf(p)){$('sug').innerHTML='';sugSig=null}
+  const ev=makeEv(p);
+  let steps=[],blocked=null,autoNote='';
+  if(mode==='auto'){
+    if(n>10){out.innerHTML='<div class="err">Auto sequencing handles up to 10 bends – use manual mode for this part.</div>';$('seq').innerHTML='';return}
+    const pl=plan(p,ev);
+    let mask=0;
+    pl.order.forEach((i,k)=>{steps.push({idx:i,mask,fl:pl.side[k],p,ev});mask|=1<<i});
+    lastPlan={order:pl.order.slice(),side:pl.side.slice()};
+    if(!pl.full){
+      const rem=[];for(let i=0;i<n;i++)if(!(pl.mask>>i&1))rem.push(i);
+      blocked={afterSteps:pl.order.length,mask:pl.mask,items:rem.map(i=>{
+        const per=[false,true].map(fl=>({fl,r:ev(i,pl.mask,fl)}));
+        const bestS=per[0].r.fails.length<=per[1].r.fails.length?per[0]:per[1];
+        const intrinsic=bestS.r.fails.length>0&&bestS.r.fails.every(c=>INTRINSIC(c.title))&&per[0].r.fails.every(c=>INTRINSIC(c.title))&&per[1].r.fails.every(c=>INTRINSIC(c.title));
+        return {i,per,best:bestS,intrinsic};
+      })};
+    }
+  }else{
+    if(man.order.length!==n)resetManual();
+    const seen=new Set(man.order);
+    if(seen.size!==n){renderSeqPanel(p);out.innerHTML='<div class="err">Each bend must be used exactly once in the sequence.</div>';return}
+    let mask=0;
+    man.order.forEach((i,k)=>{steps.push({idx:i,mask,fl:man.side[k],p,ev});mask|=1<<i});
+  }
+
+  /* nothing keeps every rule: fall back to the best sequence that only breaks the 'bigger part in front' rule, and say so */
+  let relaxedUsed=false;
+  if(blocked&&mode==='auto'&&!p.relax){
+    const pr=Object.assign({},p,{relax:true}),evr=makeEv(pr),plr=plan(pr,evr);
+    if(plr.full){
+      let m2=0;steps=[];
+      plr.order.forEach((i,k)=>{steps.push({idx:i,mask:m2,fl:plr.side[k],p:pr,ev:evr});m2|=1<<i});
+      lastPlan={order:plr.order.slice(),side:plr.side.slice()};
+      blocked=null;relaxedUsed=true;
+    }
+  }
+  if(p.relax&&steps.length===n)relaxedUsed=true;
+  /* no single tool pair can do it: use the stored plan with the fewest tool changes (if one was found) */
+  let multi=null;
+  if(blocked&&multiRes&&multiRes.sig===sigOf(p)){
+    multi=multiRes;blocked=null;
+    steps=multi.steps.map(st=>({idx:st.idx,mask:st.mask,fl:st.fl,p:st.p,ev:st.ev,pn:st.pn,dn:st.dn}));
+  }
+  /* results */
+  let fails=0,warns=multi?multi.changes:0;const failList=[];
+  const res=steps.map(s=>{
+    const r=s.ev(s.idx,s.mask,s.fl),alt=s.ev(s.idx,s.mask,!s.fl);
+    r.fails.forEach(c=>{fails++;failList.push(`Bend ${s.idx+1}: ${c.title}`)});
+    warns+=r.warnN;
+    if(mode==='auto'&&!suppUser[s.idx])supp[s.idx]=(r.bgOK===false&&r.supOK===true);
+    if(supp[s.idx]&&!supportOK(s.p,r.open)){warns++;r.noSup=true}
+    else if(!supp[s.idx]&&r.bgOK===false){warns++;r.noBG=true}
+    return {...s,r,alt};
+  });
+  let untested=!p.punch||!p.die||!(p.dH>0)||!(p.phH>0&&(p.dhH>0||p.dhKnown));
+  let h='';
+  const seqTxt=res.map((s,k)=>`${k+1}. bend ${s.idx+1} ${sideName(s.fl).toLowerCase()}`).join(' → ');
+  let sum=`Bend check – C500-6100, punch ${p.pAng}° H${p.pH}, V${p.V}, t ${(p.t).toFixed(2)} mm, TS ${p.TS}, L ${p.L.toFixed(0)} mm\n`;
+  if(blocked){
+    h+=`<div class="verdict v-fail">✖ Not possible on this setup<small>${blocked.afterSteps?`Gets through ${blocked.afterSteps} of ${n} bends, then stops.`:'Cannot even start – the first bend fails in every order.'} Details below.</small></div>`;
+    sum+=`RESULT: NOT possible – stuck after ${blocked.afterSteps} of ${n} bends\n`;
+    {
+      /* why the end bends can't simply go first */
+      const why=[];
+      [0,n-1].forEach(i=>{
+        const per=[false,true].map(fl=>ev(i,0,fl));
+        const ok=per.some(r=>!r.fails.length);
+        if(!ok){const t=[...new Set([].concat(...per.map(r=>r.fails.map(c=>c.title))))];why.push(`bend ${i+1}: ${t.join(', ')}`)}
+      });
+      if(why.length)h+=`<div class="chk-item l-warn"><b>Ends first is not possible here</b><span class="m">${why.join(' · ')}. With this punch and die the end bends fail as the first step on either side, so the search has to start inside. A smaller V or a different tool pair may fix this.</span></div>`;
+    }
+
+  }else if(fails){
+    h+=`<div class="verdict v-fail">✖ This sequence does not work<small>${[...new Set(failList)].join(' · ')}</small></div>`;
+    sum+='RESULT: sequence fails – '+[...new Set(failList)].join('; ')+'\n';
+  }else if(warns){
+    h+=`<div class="verdict v-warn">⚠ ${mode==='auto'?'Sequence found, with cautions':'Works, with cautions'}<small>${warns} warning${warns>1?'s':''} below.${untested?' Some checks were not fully tested (grey items).':''}</small></div>`;
+    sum+='RESULT: possible with cautions\n';
+  }else{
+    h+=`<div class="verdict v-ok">✔ ${mode==='auto'?'Sequence found':'Works on this setup'}<small>${untested?'Passed everything that could be tested; grey items need more input (holder heights).':'All checks passed.'}</small></div>`;
+    sum+='RESULT: possible\n';
+  }
+  if(relaxedUsed){
+    const bad=res.map((x,k)=>x.r.bigBad?k+1:0).filter(Boolean);
+    if(bad.length)h+=`<div class="chk-item l-warn"><b>⚠ Bigger part at the back</b><span class="m">No sequence (with any front/back choice) keeps the bigger part in front for this part and these tools. This is the best order found; it breaks that rule only at step${bad.length>1?'s':''} ${bad.join(', ')}.</span></div>`;
+  }
+  if(multi){
+    h+=`<div class="chk-item l-warn"><b>⚠ Tool change needed</b><span class="m">No single punch + die pair can make every bend, so this plan uses ${multi.changes} tool change${multi.changes>1?'s':''} (the fewest possible): ${multi.groups.map(g=>g.pn+' + '+g.dn+' for step'+(g.from===g.to?' '+(g.from+1):'s '+(g.from+1)+'–'+(g.to+1))).join('; then ')}.</span></div>`;
+    sum+='TOOL CHANGES: '+multi.groups.map(g=>g.pn+' + '+g.dn+' (steps '+(g.from+1)+'-'+(g.to+1)+')').join(' -> ')+'\n';
+  }
+  if(res.length)sum+='SEQUENCE: '+seqTxt+'\n';
+
+  if(mode==='auto'&&res.length){
+    h+=`<div class="seqlist"><h3 style="margin:10px 0 6px">Suggested sequence</h3>`;
+    res.forEach((s,k)=>{
+      const f=s.r.fails.length,w=s.r.warnN;
+      h+=`<div class="stp"><span class="k">Step ${k+1}</span><span>${bendLabel(p,s.idx)}</span><span>start at ${sideName(s.fl)}</span><span class="s ${f?'s-fail':w?'s-warn':'s-ok'}">${f?'✖':w?'⚠':'✔'}</span></div>`;
+    });
+    h+=`</div>`;
+  }
+  h+='<!--SPLIT-->';
+
+  res.forEach((s,k)=>{
+    const p=s.p;
+    const {r,alt,idx,fl}=s,b=p.bends[idx];
+    h+=`<div class="card bcard"><h3>Step ${k+1}: ${bendLabel(p,idx)} · start at ${sideName(fl)}</h3>`;
+    if(multi)h+=`<div class="note" style="margin:0 0 6px"><b>Tools: ${s.pn} + ${s.dn}</b>${k>0&&res[k-1].pn+res[k-1].dn!==s.pn+s.dn?' – <b>change tools before this step</b>':''}</div>`;
+    if(r.noBG)h+=`<div class="chk-item l-warn"><b>⚠ Back gauge not possible</b><span class="m">The back gauge finger would run into the part here. Use Support for this bend.</span></div>`;
+    if(r.noSup)h+=`<div class="chk-item l-warn"><b>⚠ Support not possible</b><span class="m">The support ledge would run into the die or the part (the flat sheet must reach past the die top by more than the ledge length, 20.6 mm). Use the back gauge for this bend.</span></div>`;
+    sum+=`\nStep ${k+1}: bend ${idx+1} (${b.ang}° ${b.raw>0?'+':'−'}), start at ${sideName(fl)}, finger as ${supp[idx]?'support':'back gauge'}\n`;
+    const prob=r.C.filter(c=>c.lvl==='fail'||c.lvl==='warn');
+    if(!prob.length)h+=`<div class="chk-item l-ok"><b>✔ No problems</b></div>`;
+    prob.forEach(c=>{
+      h+=`<div class="chk-item l-${c.lvl}"><b>${sym[c.lvl]} ${c.title}</b><span class="m">${c.msg}</span></div>`;
+      sum+=`  ${sym[c.lvl]} ${c.title}: ${c.msg}\n`;
+    });
+    if(r.fails.length){
+      const an=sideName(!fl),altFails=alt.fails.map(c=>c.title);
+      if(!altFails.length)h+=`<div class="chk-item l-warn"><b>⇄ Switch side</b><span class="m">Starting at ${an} passes this step.</span></div>`;
+      else h+=`<div class="chk-item l-na"><b>⇄ Other side</b><span class="m">Starting at ${an} also fails: ${[...new Set(altFails)].join(', ')}.</span></div>`;
+    }
+    {
+      let dh=`<div class="nums">${r.num.Fm.toFixed(0)} kN/m · ${r.num.tons.toFixed(1)} t total · V/t ${(p.V/p.t).toFixed(1)} · air radius ≈ ${r.num.rAir.toFixed(1)} mm · min flange ≈ ${fm(r.num.bmin,1)} · overbend to ≈ ${r.effAng}°</div>`;
+      r.C.forEach(c=>{dh+=`<div class="chk-item l-${c.lvl}"><b>${sym[c.lvl]} ${c.title}</b><span class="m">${c.msg}</span></div>`});
+      const an=sideName(!fl),altFails=alt.fails.map(c=>c.title);
+      dh+=altFails.length?`<div class="chk-item l-na"><b>⇄ Other side</b><span class="m">Starting at ${an} fails: ${[...new Set(altFails)].join(', ')}.</span></div>`:`<div class="chk-item l-na"><b>⇄ Other side</b><span class="m">Starting at ${an} also passes.</span></div>`;
+      h+=`<details><summary>Details</summary><div class="inner">${dh}</div></details>`;
+    }
+    const sideSeg=`<div class="fseg" role="group" aria-label="Start side"><button data-sk="${k}" data-sv="F" class="${fl?'':'on'}">Start FRONT</button><button data-sk="${k}" data-sv="B" class="${fl?'on':''}">Start BACK</button></div>`;
+    h+=fingerSeg(idx,sideSeg)+drawStage(p,idx,r)+`</div>`;
+  });
+
+  if(blocked){
+    sum+=`\nBLOCKED after ${blocked.afterSteps} step(s):\n`;
+    h+=`<div class="blk"><h3>Where it stops: after step ${blocked.afterSteps}</h3>
+    <div class="note" style="margin-top:0">Best partial sequence: ${blocked.afterSteps?seqTxt:'(none)'}. None of the remaining bends can be formed next, on either side:</div>`;
+    blocked.items.forEach(it=>{
+      h+=`<div style="margin-top:10px"><b>${bendLabel(p,it.i)}</b>`;
+      sum+=`  ${bendLabel(p,it.i)}\n`;
+      it.per.forEach(pp=>{
+        h+=`<div class="chk-item l-fail"><b>Start at ${sideName(pp.fl)}</b><span class="m">${pp.r.fails.map(c=>`${c.title}: ${c.msg}`).join('<br>')}</span></div>`;
+        sum+=`    ${sideName(pp.fl)}: ${pp.r.fails.map(c=>c.title+' – '+c.msg).join('; ')}\n`;
+      });
+      if(it.intrinsic)h+=`<div class="chk-item l-na"><b>Note</b><span class="m">These limits do not depend on the order – this bend cannot be made with this tooling and material as entered.</span></div>`;
+      h+=fingerSeg(it.i)+drawStage(p,it.i,it.best.r)+`</div>`;
+    });
+    h+=`</div>`;
+  }
+  {const k=h.indexOf('<!--SPLIT-->');if(k>=0){$('outTop').innerHTML=h.slice(0,k);out.innerHTML=h.slice(k+12)}else out.innerHTML=h}
+  lastSummary=sum;
+  if(mode==='manual'){
+    renderSeqPanel(p);
+    res.forEach((s,k)=>{const f=s.r.fails.length,w=s.r.warnN;setStepStatus(k,f?'s-fail':w?'s-warn':'s-ok',f?'✖':w?'⚠':'✔')});
+  }else{
+    $('seq').innerHTML=res.length?'<div class="note" style="margin-top:0">The suggested order is listed with the results below.</div>':'';
+  }
+  const tm=$('toManual');if(tm)tm.onclick=()=>setMode('manual');
+  out.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>{
+    const k=+b.dataset.sk,toB=b.dataset.sv==='B';
+    if(mode!=='manual')setMode('manual');
+    man.side[k]=toB;calc();
+  });
+  out.querySelectorAll('[data-fg]').forEach(b=>b.onclick=()=>{supp[+b.dataset.b]=b.dataset.fg==='1';suppUser[+b.dataset.b]=true;calc()});
+  saveState();
+  maybeRepick();
+}
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('input[name=mode]').forEach(r=>r.checked=(r.value===m));
+  if(m==='manual'){
+    const n=rows.length-1;
+    const order=lastPlan.order.slice(),side=lastPlan.side.slice();
+    for(let i=0;i<n;i++)if(!order.includes(i)){order.push(i);side.push(false)}
+    man.order=order.length===n?order:[...Array(n).keys()];
+    man.side=order.length===n?side:Array(n).fill(false);
+  }
+  calc();
+}
+
+/* ---------- persistence (convenience only) ---------- */
+const IDS=['m_tabH','m_ramF','m_bedF','m_bedB','m_ton','m_len','m_cols','m_day','m_throat','ph_H','dh_H','mat','TS','sb'];
+function saveState(){
+  try{
+    const o={f:{}};
+    IDS.forEach(i=>o.f[i]=$(i).value);
+    kvSave('state',o);
+  }catch(e){}
+}
+function loadState(){
+  try{
+    const o=ARGS.store.state||null;
+    if(!o)return;
+    IDS.forEach(i=>{if(o.f&&o.f[i]!==undefined)$(i).value=o.f[i]});
+  }catch(e){}
+  curUnit='mm';$('unit').value='mm';
+}
+
+
+/* ---------- tool library ---------- */
+const ptsText=a=>a.map(q=>q.join(',')).join('\n');
+const BUILTIN={
+  punch:[{name:'BIU-023',angle:86,height:163,maxLoad:650,mirror:false,
+    outline:ptsText([[0,0],[5.83,6.25],[-22,55.25],[-22,127.75],[10,146.75],[10,200],[-10,200],[-10,163],[-49,163],[-47.5,51]])}],
+  die:[{name:'ES-V22 (4-V)',V:22,angle:85,height:60,maxLoad:800,
+    outline:ptsText([[-30,0],[-11,0],[0,-12],[11,0],[30,0],[30,-12.5],[10.9,-30],[30,-47.5],[30,-60],[8,-60],[0,-51.3],[-8,-60],[-30,-60],[-30,-55],[-2.7,-30],[-30,-5]])}]
+};
+/* more dies from the controller screens (inches converted to mm; shoulder/tip radii ignored) */
+(function(){
+  const IN=25.4,r2=v=>Math.round(v*100)/100;
+  function oneV(name,Vin,A,hw1,hw2,Hin,s3,s4,f5,f6,maxLoad){
+    const V=Vin*IN,H=Hin*IN,d=(V/2)/Math.tan(rad(A/2));
+    const P=[[-hw2,0],[-V/2,0],[0,-d],[V/2,0],[hw1,0],[hw1,-(H-f5)],[s3,-(H-f5)],[s3,-H],[-s4,-H],[-s4,-(H-f6)],[-hw2,-(H-f6)]]
+      .map(q=>[r2(q[0]),r2(q[1])]).filter((q,i,a)=>!(i>0&&q[0]===a[i-1][0]&&q[1]===a[i-1][1]));
+    return {name,V:Math.round(V*10)/10,angle:A,height:Math.round(H*10)/10,maxLoad,stem:Math.round(Math.min(f5,f6)*10)/10,outline:ptsText(P)};
+  }
+  const m=v=>v*IN;
+  BUILTIN.die.push(
+    oneV('OZU-827',1.1811,80,m(.7874),m(.7874),2.1650,m(.2598),m(.2598),m(.6630),m(.6630),1350),
+    oneV('OZU-806',.6299,86,m(.4949),m(.4949),2.1650,m(.2559),m(.2650),m(.7087),m(.7087),1270),
+    oneV('OZU-353',.6299,30,m(.5905),m(.5905),3.9370,m(.5905),m(.5905),0,0,800),
+    oneV('OZU-352',.4724,30,m(.3748),m(.3748),3.9370,m(.3748),m(.3748),m(.1181),m(.1181),1180),
+    oneV('OZU-322',.3937,86,m(.3937),m(.3937),3.9370,m(.4921),m(.4921),m(.3937),m(.3937),1180),
+    oneV('OZU-321',.2358,86,m(.3150),m(.3150),3.9370,m(.4921),m(.4921),m(.7087),m(.7087),1180),
+    oneV('OZU-035',1.9685,80,m(1.4764),m(1.4764),2.1653,m(1.4764),m(1.4764),0,0,1470)
+  );
+  BUILTIN.die.push(
+    /* OZU-805: V12, 86°, plain 18.9 mm block. The controller shows 31.50 t/cm, which is not plausible
+       for a V12 – 1180 kN/m (same as OZU-352, also V12) is used instead. Confirm the real value. */
+    oneV('OZU-805',.4724,86,m(.3724),m(.3724),2.1650,m(.3724),m(.3724),0,0,1180),
+    oneV('OZU-822',3.1500,90,m(1.9681),m(1.9681),2.5591,m(1.1811),m(1.1811),m(.7087),m(.7087),1608)
+  );
+  /* ES-V16 / V35 / V50 are the same 4-V block as ES-V22 turned (screen orientation checked per die) */
+  const base=parsePts(BUILTIN.die[0].outline).map(q=>[q.x,q.y]);
+  const rot=(f)=>ptsText(base.map(f).map(q=>[r2(q[0]),r2(q[1])]));
+  BUILTIN.die.splice(1,0,
+    {name:'ES-V16 (4-V)',V:16,angle:85,height:60,maxLoad:800,outline:rot(q=>[-q[0],-60-q[1]])},
+    {name:'ES-V35 (4-V)',V:35,angle:85,height:60,maxLoad:800,outline:rot(q=>[q[1]+30,q[0]-30])},
+    {name:'ES-V50 (4-V)',V:50,angle:85,height:60,maxLoad:800,outline:rot(q=>[q[1]+30,-30-q[0]])}
+  );
+  /* ---- punches from the controller (EUROPEAN_/UNIVERSAL_GENERIC and WILA_GENERIC models) ---- */
+  function gooseneck(name,A,H1,H2,L,neckIn,maxLoad){
+    const s=Math.tan(rad(A/2)),[L1,L2,L3,L4,L5,L6,L7,L8]=L.map(m);
+    const xf=L7-L1*s,xR=xf+L8,xh=L6-xR,y2=L1+L2,y4=y2+L3+L4,h1=m(H1),h2=m(H2);
+    const ni=L5/2; /* shank centred on the tip line (checked on the real BIU-023) */
+    const P=[[0,0],[L1*s,L1],[-xf,y2],[-xf,y2+L3],[xh,y4],[xh,h1],[ni,h1],[ni,h2],[ni-L5,h2],[ni-L5,h1],[-xR,h1],[-xR,L2]]
+      .map(q=>[r2(q[0]),r2(q[1])]);
+    return {name,angle:A,height:Math.round(h1*10)/10,maxLoad,mirror:false,outline:ptsText(P)};
+  }
+  BUILTIN.punch.push(
+    /* controller GENERIC models; resistance t/cm × 980.7 */
+    gooseneck('9.75in GooseNeck',80,9.7051,11.2795,[.3937,4.4291,2.2835,1.8898,.7874,5.2449,2.2913,1.7496],11.5,382),
+    gooseneck('BIU-226',45,6.4173,7.8740,[.2461,3.7795,.9449,.6693,.7874,2.1555,1.1417,.7035],null,392),
+    /* BIU-004: straight WILA punch, 60°, 20.7 mm wide, shoulder 98 mm above the tip */
+    (function(){const hw=m(.8150)/2,th=hw/Math.tan(rad(30));
+      return {name:'BIU-004',angle:60,height:98,maxLoad:1599,mirror:false,
+        outline:ptsText([[0,0],[hw,th],[hw,135],[-hw,135],[-hw,th]].map(q=>[r2(q[0]),r2(q[1])]))};})(),
+    /* BIU-021: 28° blade. The controller shows it only as an unnamed DXF shape, so this outline is
+       digitised from that picture (scaled to H163) – approximate, ±1–2 mm. */
+    {name:'BIU-021',angle:28,height:163,maxLoad:686,mirror:false,
+      outline:ptsText([[0,0],[4.5,20.1],[-1,24.9],[-1,130.6],[10.8,148.4],[10.8,163],[-15.3,163],[-15.3,61.8]])}
+  );
+})();
+/* Punch holders (controller PUN. HOLD. tab). NSCL: fit DOUBLE, upper fit WILA, lower fit UNIVERSAL, H 3.1496 in, resistance 1.20 t/cm. */
+const HOLDERS=[{name:'NSCL',height:80,maxLoad:1177,info:'fit DOUBLE · upper WILA · lower UNIVERSAL'}];
+/* Die holder (controller DIE HOLD. tab, model UNIVERSAL_HOLDER): H 0.7260 in under the die, L1=L2 1.9291 in (98 mm wide), L5 slot 2.3622 in (60 mm), L6 lugs 0.5905 in (15 mm). */
+const DHOLDERS=[{id:'uni',name:'Universal die holder',height:18.44,halfW:49,slotHW:30,lugH:15}];
+const dhFor=dn=>(sel.dholder==='uni'&&/^ES/i.test(dn||''))?DHOLDERS[0]:null;
+let userTools={punch:[],die:[]};
+let sel={punch:'BIU-023',die:'ES-V22 (4-V)',holder:'NSCL',dholder:'uni'};
+const toolsOf=k=>BUILTIN[k].concat(userTools[k]).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true,sensitivity:'base'}));
+const isBuiltin=(k,n)=>BUILTIN[k].some(t=>t.name===n);
+function loadTools(){
+  try{
+    const o=ARGS.store.tools||null;
+    if(!o)return;
+    if(o.user&&Array.isArray(o.user.punch)&&Array.isArray(o.user.die))userTools={punch:o.user.punch,die:o.user.die};
+    if(o.sel){sel.punch=o.sel.punch||sel.punch;sel.die=o.sel.die||sel.die;sel.holder=o.sel.holder||sel.holder;sel.dholder=o.sel.dholder||sel.dholder}
+  }catch(e){}
+}
+function saveTools(){try{kvSave('tools',{user:userTools,sel})}catch(e){}}
+function fillSelects(){
+  if(sel.dholder!=='uni'&&sel.dholder!=='none')sel.dholder='uni';
+  $('selDH').innerHTML=DHOLDERS.map(h=>`<option value="${h.id}"${sel.dholder===h.id?' selected':''}>${h.name} · H${h.height}</option>`).join('')+`<option value="none"${sel.dholder==='none'?' selected':''}>No die holder</option>`;
+  if(!HOLDERS.some(h=>h.name===sel.holder)&&sel.holder!=='none')sel.holder=HOLDERS[0].name;
+  $('selH').innerHTML=HOLDERS.map(h=>`<option value="${h.name}"${h.name===sel.holder?' selected':''}>${h.name} · H${h.height}</option>`).join('')+`<option value="none"${sel.holder==='none'?' selected':''}>Unknown (typed height)</option>`;
+  ['punch','die'].forEach(k=>{
+    const list=toolsOf(k);
+    if(!list.some(t=>t.name===sel[k]))sel[k]=list[0].name;
+    $(k==='punch'?'selP':'selD').innerHTML=list.map(t=>{
+      const lab=k==='punch'?`${t.name} · ${t.angle}° H${t.height}`:`${t.name} · V${t.V} ${t.angle||''}°`;
+      return `<option value="${t.name.replace(/"/g,'&quot;')}"${t.name===sel[k]?' selected':''}>${lab}${isBuiltin(k,t.name)?'':' · mine'}</option>`;
+    }).join('');
+  });
+}
+function applyTools(){
+  const P=toolsOf('punch').find(t=>t.name===sel.punch),D=toolsOf('die').find(t=>t.name===sel.die);
+  sel.dholder=/^ES/i.test(sel.die||'')?'uni':'none';$('selDH').value=sel.dholder;saveTools();
+  const HD=HOLDERS.find(h=>h.name===sel.holder),DH=dhFor(sel.die);
+  $('dh_H').value=DH?DH.height:0;
+  if(HD)$('ph_H').value=HD.height;
+  if(P){
+    $('p_ang').value=P.angle;$('p_H').value=P.height;$('p_max').value=P.maxLoad;
+    $('punchPts').value=P.outline||'';$('toolMirror').checked=!!P.mirror;
+  }
+  if(D){
+    $('V').value=D.V;$('d_ang').value=D.angle??'';$('d_H').value=D.height??'';$('d_max').value=D.maxLoad??'';
+    $('diePts').value=D.outline||'';
+  }
+  $('toolInfo').textContent=(HD?`Punch holder ${HD.name}: H${HD.height} mm, ${HD.maxLoad} kN/m. `:'')+(DH?`Die holder ${DH.name}: H${DH.height} mm under the die. `:(sel.dholder==='uni'?'This die sits straight on the table (no holder). ':''))+(P?`Punch ${P.name}: ${P.angle}°, H${P.height} mm, ${P.maxLoad} kN/m. `:'')+(D?`Die ${D.name}: V${D.V}, ${D.angle??'?'}°, ${D.height??'?'} mm high${D.maxLoad?`, ${D.maxLoad} kN/m`:''}.`:'');
+}
+function ntNote(){
+  $('nt_vwrap').style.display=$('nt_type').value==='die'?'':'none';
+  $('nt_note').textContent=$('nt_type').value==='punch'
+    ?'Punch outline: tip at 0,0, y up, +x toward the back (ram side) of the machine. List the points around the profile, tip first.'
+    :'Die outline: top shoulder plane at y=0, the V in use centred on x=0, body below (negative y).';
+}
+function ntMsg(t,bad){const e=$('nt_msg');e.textContent=t;e.style.color=bad?'var(--fail)':'var(--mute)'}
+
+
+
+/* ---------- selected-tool diagram ---------- */
+function renderToolDiagram(){
+  const sv=$('toolDiagram');if(!sv)return;
+  const pAng=num('p_ang'),pH=num('p_H'),pMax=num('p_max'),V=num('V'),dAng=num('d_ang'),dHt=num('d_H'),dMax=num('d_max');
+  let pp=mirrorPts(parsePts($('punchPts').value)),dd=mirrorPts(parsePts($('diePts').value));
+  let pS=false,dS=false;
+  if(!pp&&pAng>0&&pH>0){pS=true;const hw=20,yw=Math.min(pH,hw/Math.tan(rad(pAng/2)));pp=[{x:0,y:0},{x:-hw,y:yw},{x:-hw,y:pH},{x:hw,y:pH},{x:hw,y:yw}]}
+  if(!dd&&V>0&&dHt>0){dS=true;const a=dAng>0?dAng:85,dep=(V/2)/Math.tan(rad(a/2)),hw=Math.max(30,V/2+15);dd=[{x:-hw,y:0},{x:-V/2,y:0},{x:0,y:-dep},{x:V/2,y:0},{x:hw,y:0},{x:hw,y:-dHt},{x:-hw,y:-dHt}]}
+  if(!pp&&!dd){sv.innerHTML='';sv.style.display='none';return}
+  sv.style.display='';
+  const bb=a=>({x0:Math.min(...a.map(q=>q.x)),x1:Math.max(...a.map(q=>q.x)),y0:Math.min(...a.map(q=>q.y)),y1:Math.max(...a.map(q=>q.y))});
+  const pb=pp?bb(pp):null,db=dd?bb(dd):null;
+  const dieH=db?db.y1-db.y0:0,pTop=pb?pb.y1:0;
+  const ref=Math.max(pTop,dieH,60),fs=ref/22,sw=ref/450,tk=fs*0.35;
+  const X=x=>x.toFixed(2),Y=y=>(-y).toFixed(2),f1=v=>(Math.round(v*10)/10).toString();
+  const ln=(x1,y1,x2,y2,ex='')=>`<line x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}" stroke="var(--mute)" stroke-width="${sw}" ${ex}/>`;
+  const ext=(x1,y1,x2,y2)=>ln(x1,y1,x2,y2,`stroke-dasharray="${sw*4} ${sw*3}" opacity="0.7"`);
+  const tx=(x,y,t,an='middle',fz=fs,col='var(--ink)')=>`<text x="${X(x)}" y="${Y(y)}" font-size="${fz.toFixed(2)}" fill="${col}" text-anchor="${an}">${t}</text>`;
+  const dv=(x,y1,y2,label,side)=>ln(x,y1,x,y2)+ln(x-tk,y1,x+tk,y1)+ln(x-tk,y2,x+tk,y2)+`<text transform="translate(${X(x+side*fs*0.95)},${Y((y1+y2)/2)}) rotate(-90)" font-size="${fs.toFixed(2)}" fill="var(--ink)" text-anchor="middle">${label}</text>`;
+  const dh=(y,x1,x2,label)=>ln(x1,y,x2,y)+ln(x1,y-tk,x1,y+tk)+ln(x2,y-tk,x2,y+tk)+tx((x1+x2)/2,y+fs*0.45,label);
+  const poly=(a,ox,oy,fill,stroke)=>`<polygon points="${a.map(q=>X(q.x+ox)+','+Y(q.y+oy)).join(' ')}" fill="${fill}" stroke="${stroke}" stroke-width="${sw*1.6}" stroke-linejoin="round"/>`;
+  let g='',cur=0,topY=0;
+  const titleY=Math.max(pTop,dieH)+7*fs;
+  if(pp){
+    const ox=fs*1.5-pb.x0,xl=ox+pb.x0,xr=ox+pb.x1,tipx=ox;
+    g+=poly(pp,ox,0,'color-mix(in srgb, var(--tool) 25%, transparent)','var(--tool)');
+    const r=fs*2.6,a1=rad(90-pAng/2),a2=rad(90+pAng/2);
+    g+=`<path d="M ${X(tipx+r*Math.cos(a1))} ${(-r*Math.sin(a1)).toFixed(2)} A ${X(r)} ${X(r)} 0 0 0 ${X(tipx+r*Math.cos(a2))} ${(-r*Math.sin(a2)).toFixed(2)}" fill="none" stroke="var(--ink)" stroke-width="${sw}"/>`;
+    g+=tx(tipx,-fs*1.3,`${f1(pAng)}°`);
+    const hx=xr+2.8*fs;
+    g+=ext(tipx,0,hx+tk,0)+ext(xr,pH,hx+tk,pH)+dv(hx,0,pH,`H ${f1(pH)}`,1);
+    let extra=2.8*fs;
+    if(pb.y1-pH>1){const tx2=hx+3*fs;g+=ext(xr,pb.y1,tx2+tk,pb.y1)+dv(tx2,0,pb.y1,`${f1(pb.y1)} total`,1);extra=5.8*fs}
+    const wy=pb.y1+2.6*fs;
+    g+=ext(xl,pb.y1,xl,wy+tk)+ext(xr,pb.y1,xr,wy+tk)+dh(wy,xl,xr,`W ${f1(pb.x1-pb.x0)}`);
+    g+=tx(xl-fs*1.2,titleY,`Punch · ${sel.punch}${pS?' (schematic)':''}`,'start',fs*1.05);
+    g+=tx(xl-fs*1.2,titleY-1.5*fs,`${pAng>0?f1(pAng)+'°':''}${pMax>0?' · max '+f1(pMax)+' kN/m':''}`,'start',fs*0.85,'var(--mute)');
+    cur=xr+extra+fs*2.5;
+  }
+  if(dd){
+    const ox=cur+6*fs-db.x0,oy=-db.y0,xl=ox+db.x0,xr=ox+db.x1,top=db.y1+oy;
+    g+=poly(dd,ox,oy,'color-mix(in srgb, var(--die) 45%, transparent)','var(--die)');
+    const hx=xl-2.8*fs;
+    g+=ext(xl,0,hx-tk,0)+ext(xl,top,hx-tk,top)+dv(hx,0,top,`H ${f1(top)}`,-1);
+    const wy=-2.6*fs;
+    g+=ext(xl,0,xl,wy-tk)+ext(xr,0,xr,wy-tk)+dh(wy,xl,xr,`W ${f1(db.x1-db.x0)}`);
+    if(V>0){const vy=top+2.6*fs;g+=ext(ox-V/2,top,ox-V/2,vy+tk)+ext(ox+V/2,top,ox+V/2,vy+tk)+dh(vy,ox-V/2,ox+V/2,`V${f1(V)}${dAng>0?' · '+f1(dAng)+'°':''}`)}
+    g+=tx(hx-fs*1.2,titleY,`Die · ${sel.die}${dS?' (schematic)':''}`,'start',fs*1.05);
+    g+=tx(hx-fs*1.2,titleY-1.5*fs,`${dMax>0?'max '+f1(dMax)+' kN/m':''}`,'start',fs*0.85,'var(--mute)');
+    cur=xr+fs*2;
+  }
+  const minY=-5.2*fs,maxY=titleY+fs*1.2;
+  g+=tx(cur/2,minY+0.8*fs,'◀ front        back / ram ▶','middle',fs*0.8,'var(--mute)');
+  sv.setAttribute('viewBox',`0 ${Y(maxY)} ${X(cur)} ${(maxY-minY).toFixed(2)}`);
+  sv.innerHTML=g;
+}
+
+/* ---------- tool suggestions ---------- */
+let sugBusy=false,sugSig=null;
+const sigOf=p=>JSON.stringify([p.legs,p.bends.map(b=>[b.ang,b.dir]),p.t,p.TS,p.sb,p.L,p.reqR,p.phH,p.tabH,p.ramF,p.bedF,p.bedB]);
+function setSug(ready,why){
+  $('sugBtn').disabled=!ready||sugBusy;
+  $('sugHint').textContent=ready?'':(why||'Available once the shape (every length and angle), thickness, strength and bend length are filled in.');
+}
+function mirrorIf(a,f){return a&&f?a.map(q=>({x:-q.x,y:q.y})):a}
+function comboParams(base,P,D){
+  const p=Object.assign({},base);
+  p.pAng=P.angle;p.pH=P.height;p.pMax=P.maxLoad;p.pNm=P.name;p.dNm=D.name;
+  p.dhH=(dhFor(D.name)||{height:0}).height;p.dStem=D.stem||0;
+  p.V=D.V;p.dAng=D.angle||null;p.dH=D.height||null;p.dMax=D.maxLoad||null;
+  p.punch=mirrorIf(parsePts(P.outline||''),!!P.mirror);
+  p.die=mirrorIf(parsePts(D.outline||''),!!P.mirror);
+  return p;
+}
+/* shop rule: BIU punches and ES dies come first */
+const isBig=pn=>/9\.75/.test(pn||'');   /* the 9.75in gooseneck: last resort */
+/* punch priority: first one that can make the whole part wins; the 9.75in gooseneck is last */
+/* for 90° bends, 90°-class dies (80° and up) come before acute ones such as the 30° OZU dies */
+const all90=p=>p.bends.length>0&&p.bends.every(b=>Math.abs(b.ang-90)<=1);
+const dieAngMiss=(p,dn)=>{if(!all90(p))return 0;const D=toolsOf('die').find(t=>t.name===dn);return D&&D.angle>0&&D.angle<80?1:0};
+const PUNCH_PRIO=['BIU-023','BIU-226','BIU-021','BIU-004'];
+const punchRank=pn=>{const i=PUNCH_PRIO.indexOf(pn);return i>=0?i:(isBig(pn)?PUNCH_PRIO.length+1:PUNCH_PRIO.length)};
+const prefMiss=(pn,dn)=>punchRank(pn)+(/^ES/i.test(dn||'')?0:1);
+function quickForce(p){
+  const Fm=p.t*p.t*2*p.TS/(1.4*p.V);
+  return p.pMax>0&&Fm<=p.pMax&&!(p.dMax>0&&Fm>p.dMax)&&Fm*p.L/1000<=p.mTon*G&&p.L<=p.mLen&&p.V/p.t>=6;
+}
+function quickOk(p){
+  const Fm=p.t*p.t*2*p.TS/(1.4*p.V);
+  if(!(p.pMax>0)||Fm>p.pMax)return false;
+  if(p.dMax>0&&Fm>p.dMax)return false;
+  if(Fm*p.L/1000>p.mTon*G||p.L>p.mLen)return false;
+  if(p.V/p.t<6)return false;
+  const minTool=Math.max(p.pAng,p.dAng||0);
+  if(p.legs.some(l=>l<0.7*p.V))return false;
+  if(p.bends.some(b=>Math.max(20,b.ang-p.sb)<minTool))return false;
+  return true;
+}
+async function suggestTools(){
+  RELAX=false;
+  let g=await suggestToolsCore();
+  if(!g.length&&!multiRes&&!sugBusy){
+    RELAX=true;relaxSig=lastBaseSig;
+    g=await suggestToolsCore();
+    if(!g.length)RELAX=false;
+  }
+  return g;
+}
+async function suggestToolsCore(){
+  if(sugBusy)return [];
+  sugBusy=true;$('sugBtn').disabled=true;
+  const base=readParams(),sig=sigOf(base);
+  const Ps=toolsOf('punch'),Ds=toolsOf('die');
+  const total=Ps.length*Ds.length,good=[],part=[];
+  let k=0,viable=0;
+  const forceOk=[];
+  const box=$('sug');
+  for(let pi=0;pi<Ps.length;pi++)for(let di=0;di<Ds.length;di++){
+    k++;
+    box.innerHTML=`<div class="note">Checking combination ${k} of ${total}…</div>`;
+    await new Promise(r=>setTimeout(r,0));
+    const p=comboParams(base,Ps[pi],Ds[di]);
+    if(!quickOk(p)){if(quickForce(p)){const pl0=plan(p,makeEv(p));if(!pl0.full&&pl0.depth>0)forceOk.push({pi,di,depth:pl0.depth})}continue}
+    viable++;
+    const ev=makeEv(p),pl=plan(p,ev);
+    if(pl.full){
+      let mask=0,warns=0,turns=0;
+      pl.order.forEach((i,j)=>{warns+=ev(i,mask,pl.side[j]).warnN;mask|=1<<i;if(j>0&&pl.side[j]!==pl.side[j-1])turns++});
+      const untested=!p.punch||!p.die;
+      good.push({pi,di,warns,turns,untested,big:punchRank(Ps[pi].name),am:dieAngMiss(p,Ds[di].name),pref:/^ES/i.test(Ds[di].name||'')?0:1,ad:Math.min(...p.bends.map(b=>Math.max(20,b.ang-p.sb)))-Math.max(p.pAng,p.dAng||0),score:warns+(untested?0.5:0),vt:Math.abs(p.V/p.t-8)});
+    }else part.push({pi,di,depth:pl.depth});
+    if(!pl.full)forceOk.push({pi,di,depth:pl.depth});
+  }
+  good.sort((a,b)=>a.big-b.big||a.am-b.am||a.pref-b.pref||a.score-b.score||a.ad-b.ad||a.turns-b.turns||a.vt-b.vt);
+  multiRes=null;
+  if(!good.length&&base.bends.length<=8&&forceOk.length){
+    box.innerHTML='<div class="note">No single tool pair works – looking for a plan with the fewest tool changes…</div>';
+    forceOk.sort((a,b)=>b.depth-a.depth);
+    const seen=new Set(),cands=[];
+    for(const f of forceOk){const key=Ps[f.pi].name+'|'+Ds[f.di].name;if(seen.has(key))continue;seen.add(key);cands.push({P:Ps[f.pi],D:Ds[f.di]});if(cands.length>=10)break}
+    try{multiRes=await computeMulti(base,cands)}catch(e){multiRes=null}
+  }
+  part.sort((a,b)=>b.depth-a.depth);
+  const n=base.bends.length;
+  let h=`<div class="note">${total} combination${total>1?'s':''} checked: ${good.length} work${good.length===1?'s':''}.</div>`;
+  const row=(g,i,extra)=>`<div class="stp"><span class="k">#${i+1}</span><span>${Ps[g.pi].name} + ${Ds[g.di].name}</span>${extra}<span class="s"><button class="sm useTool" data-p="${g.pi}" data-d="${g.di}">Use</button></span></div>`;
+  if(good.length){
+    const cell=(g,i)=>row(g,i,`<span class="${g.warns?'s-warn':'s-ok'}">${g.warns?'⚠ '+g.warns+' warning'+(g.warns>1?'s':''):'✔ no warnings'}</span><span>${g.turns} turn-over${g.turns===1?'':'s'}</span>${g.untested?'<span class="note" style="margin:0">collision not tested (no outline)</span>':''}`);
+    h+=cell(good[0],0);
+    if(good.length>1){h+=`<details class="moreopts"><summary>Other options (${good.length-1} more that work)</summary>`;good.slice(1).forEach((g,k)=>h+=cell(g,k+1));h+=`</details>`}
+  }else{
+    h+=`<div class="chk-item l-fail"><b>✖ None works</b><span class="m">${viable?'Every combination that passes force, V and angle limits still fails at a bend in the sequence.':'Every combination fails on force, V opening, flange length or angle limits.'}</span></div>`;
+    if(multiRes)h+=`<div class="chk-item l-warn"><b>⚠ Plan with ${multiRes.changes} tool change${multiRes.changes>1?'s':''} found</b><span class="m">${multiRes.groups.map(g=>g.pn+' + '+g.dn+' (steps '+(g.from+1)+(g.to>g.from?'–'+(g.to+1):'')+')').join(' → ')}. It is shown in section 4.</span></div>`;
+    part.slice(0,3).forEach((g,i)=>{
+      h+=row(g,i,`<span class="s-fail">gets through ${g.depth} of ${n} bends</span>`);
+    });
+  }
+  box.innerHTML=h;
+  sugSig=sig;sugBusy=false;
+  setSug(true);
+  return good;
+}
+
+/* ---------- profile from a photo of the drawing (Claude vision via the page's `sample` capability) ---------- */
+const DRAW_PROMPT=`You are reading a dimensioned drawing of a sheet-metal profile (the cross-section of a bent part) that a fabricator photographed.
+Return ONLY a JSON object, no other text:
+{"units":"mm"|"in","thickness":number|null,"segments":[number,...],"bends":[{"angle":number,"turn":"left"|"right"},...],"basis":"outside"|"inside"|"centerline"|"unknown","confidence":"high"|"medium"|"low","notes":"short text"}
+Rules:
+- Walk along the profile from one end to the other. "segments" are the straight leg lengths in that order (flat parts between bends), in the drawing's units.
+- "bends" has exactly segments.length-1 entries, one per bend in walking order. "angle" is the INCLUDED angle between the two adjacent legs, measured on the inside of the bend: a right-angle corner is 90, a gentle 45-degree change of direction is 135, a straight continuation is 180, a closed hem is about 0-30. "turn" is the direction you turn when walking along the profile, as seen in the picture.
+- If an angle is not written, work it out from the drawing (right-angle marks, 45 degree lines, etc.). If a leg length is not written but follows from an overall dimension minus the other legs, compute it and say so in notes.
+- Ignore bend radii (treat bends as sharp), title blocks, borders and notes that are not dimensions.
+- "thickness" is the material thickness if stated, else null. If a gauge number is given instead, set null and mention it in notes.
+- Never invent numbers. If a length or angle cannot be read, use null for it and say which in notes. Mention in notes if the dimensions look like outside overall sizes rather than leg lengths.`;
+let drawBlob=null,drawBusy=false;
+async function shrinkImage(file,max=1800){
+  const bmp=await createImageBitmap(file);
+  const k=Math.min(1,max/Math.max(bmp.width,bmp.height));
+  const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+  return await new Promise(r=>c.toBlob(r,'image/jpeg',0.88));
+}
+function drawMsg(txt,cls){const e=$('drawMsg');e.textContent=txt;e.className='note'+(cls?' '+cls:'')}
+function applyDrawing(v){
+  const seg=Array.isArray(v&&v.segments)?v.segments:null,bd=Array.isArray(v&&v.bends)?v.bends:null;
+  if(!seg||!bd||seg.length<2||bd.length!==seg.length-1)throw new Error('The reading did not give a usable list of legs and bends.');
+  if(seg.length>11)throw new Error('More than 10 bends – enter this part by hand.');
+  /* keep the unit the user selected (Material section): convert the drawing's units into it */
+  const uTo=$('unit').value==='in'?'in':'mm',f=((v.units==='in')?25.4:1)/(uTo==='in'?25.4:1),r=x=>(typeof x==='number'&&isFinite(x)&&x>0)?round(x*f,uTo):NaN;
+  const nr=seg.map((l,i)=>{
+    if(i===0)return {len:r(l),ang:null};
+    const b=bd[i-1]||{},a=(typeof b.angle==='number'&&b.angle>0&&b.angle<180)?b.angle:NaN;
+    return {len:r(l),ang:isNaN(a)?NaN:(b.turn==='right'?-a:a)};
+  });
+  rows=nr;curUnit=uTo;
+  /* the Material section stays as the user set it – the drawing's thickness is only reported */
+  resetManual();setUnitLabels();renderProfile();
+  if(mode!=='auto')setMode('auto');else calc();
+  return nr;
+}
+let multiRes=null;
+let RELAX=false,relaxSig=null,lastBaseSig=null;
+/* Search for a plan that uses as few tool changes as possible when no single punch + die pair works */
+async function computeMulti(base,cands){
+  const n=base.bends.length;
+  const C=cands.map(c=>{const p=comboParams(base,c.P,c.D);return {p,ev:makeEv(p),pn:c.P.name,dn:c.D.name}});
+  let layer=new Map([['0|-1|-|-1',{cost:0,prev:null,mask:0,side:-1,dir:null,ci:-1}]]);
+  const layers=[layer];
+  for(let k=0;k<n;k++){
+    const next=new Map();
+    for(const st of layer.values())for(let ci=0;ci<C.length;ci++)for(let i=0;i<n;i++){
+      if(st.mask>>i&1)continue;
+      for(const fl of [false,true]){
+        const r=C[ci].ev(i,st.mask,fl);
+        if(r.fails.length)continue;
+        const dir=base.bends[i].dir;
+        let c=st.cost+r.warnN*10+(r.bigBad?25:0)+(fl?0.01:0)+i*0.0001*(k+1);
+        if(st.ci!==-1&&ci!==st.ci)c+=100;
+        c+=30*(/^ES/i.test(C[ci].dn||'')?0:1)+30*punchRank(C[ci].pn)+30*dieAngMiss(base,C[ci].dn);
+        if(st.side!==-1){if(dir!==st.dir)c+=4;else if((fl?1:0)!==st.side)c+=1}
+        const nm=st.mask|(1<<i),key=nm+'|'+(fl?1:0)+'|'+dir+'|'+ci;
+        const ex=next.get(key);
+        if(!ex||c<ex.cost)next.set(key,{cost:c,prev:st,i,fl,ci,mask:nm,side:fl?1:0,dir});
+      }
+    }
+    await new Promise(r=>setTimeout(r,0));
+    if(!next.size)return null;
+    layers.push(next);layer=next;
+  }
+  let best=null;
+  for(const st of layers[n].values())if(!best||st.cost<best.cost)best=st;
+  if(!best)return null;
+  const seq=[];for(let s=best;s&&s.prev;s=s.prev)seq.unshift(s);
+  let mask=0,changes=0;const steps=[],groups=[];
+  seq.forEach((s,j)=>{
+    const c=C[s.ci];
+    if(j>0&&s.ci!==seq[j-1].ci)changes++;
+    steps.push({idx:s.i,mask,fl:s.fl,p:c.p,ev:c.ev,pn:c.pn,dn:c.dn,ci:s.ci});
+    const g=groups[groups.length-1];
+    if(g&&g.ci===s.ci)g.to=j;else groups.push({ci:s.ci,pn:c.pn,dn:c.dn,from:j,to:j});
+    mask|=1<<s.i;
+  });
+  return {sig:sigOf(base),steps,changes,groups};
+}
+let lastPickSig=null,pickTimer=null;
+const AKEY='bendFinderAutoTools';
+const akSave=v=>{try{kvSave('autoKeep',v?'1':'0')}catch(e){}};
+async function autoPick(msg,say,keep){
+  $('autoKeep').checked=true;akSave(true);
+  lastPickSig=sigOf(readParams());
+  say(msg+' Picking tools…');
+  if($('sugBtn').disabled){say(msg+' Fill in the missing material inputs first.','s-warn');return}
+  if(keep){
+    /* regenerate: keep the current tools while they still make the whole sequence */
+    const p=readParams(),pl=plan(p,makeEv(p));
+    if(pl.full&&prefMiss(sel.punch,sel.die)===0){await suggestTools();say(msg+' Bend sequence regenerated with '+sel.punch+' + '+sel.die+'.');return}
+  }
+  const good=await suggestTools();
+  if(good.length){
+    const g=good[0],Ps=toolsOf('punch'),Ds=toolsOf('die');
+    sel.punch=Ps[g.pi].name;sel.die=Ds[g.di].name;saveTools();fillSelects();applyTools();calc();
+    say(msg+' Best tools applied: '+sel.punch+' + '+sel.die+' – the bend sequence is in section 4 below; other tool pairs are listed under 3 · Tooling.');
+  }else if(multiRes){
+    const f=multiRes.steps[0];sel.punch=f.pn;sel.die=f.dn;saveTools();fillSelects();applyTools();calc();
+    say(msg+' No single tool pair can make every bend, so the plan uses '+multiRes.changes+' tool change'+(multiRes.changes>1?'s':'')+' (the fewest possible) – see section 4.','s-warn');
+  }else say(msg+' No tool pair in the library can make every bend, even with a tool change – see the suggestions under 3 · Tooling.','s-warn');
+}
+function maybeRepick(){
+  if(!$('autoKeep').checked||mode!=='auto')return;
+  clearTimeout(pickTimer);
+  pickTimer=setTimeout(async()=>{
+    if(!$('autoKeep').checked||mode!=='auto'||sugBusy||drawBusy||$('sugBtn').disabled)return;
+    if(sigOf(readParams())===lastPickSig)return;
+    await autoPick('Profile or material changed.',(t,c)=>{const e=$('keepMsg');e.textContent=t;e.className='note'+(c?' '+c:'')},true);
+  },700);
+}
+async function readDrawing(){
+  if(drawBusy||!drawBlob)return;
+  drawBusy=true;$('drawGo').disabled=true;drawMsg('Reading the drawing…');
+  try{
+    if(!ARGS.aiEnabled)throw new Error('Reading drawings needs an ANTHROPIC_API_KEY on the server.');
+    const rr=await rpc('read_drawing',{prompt:DRAW_PROMPT,image:await blobToB64(drawBlob)},true);
+    const v=rr.result;
+    const nr=applyDrawing(v);
+    const bad=nr.some((q,i)=>isNaN(q.len)||(i>0&&isNaN(q.ang)));
+    let msg='Read '+nr.length+' legs: '+nr.map(q=>isNaN(q.len)?'?':q.len).join(' / ')+' '+curUnit+'; angles: '+nr.slice(1).map(q=>isNaN(q.ang)?'?':q.ang).join(', ')+'.';
+    msg+=' Confidence '+(v.confidence||'unknown')+'.';
+    if(typeof v.thickness==='number'&&v.thickness>0){const tf=((v.units==='in')?25.4:1)/(curUnit==='in'?25.4:1),dt=round(v.thickness*tf,curUnit);if(Math.abs(dt-(num('t')||0))>1e-6)msg+=' The drawing states thickness '+dt+' '+curUnit+' – your Material setting ('+num('t')+' '+curUnit+') was kept.';}
+    if(v.notes)msg+=' '+String(v.notes).slice(0,400);
+    if(bad){drawMsg(msg+' Some values could not be read – fill the empty cells in the table, then press "Suggest tools".','s-warn');return}
+    await autoPick(msg,drawMsg);
+  }catch(e){
+    const c=e&&e.code;
+    drawMsg(c==='rate_limited'?'Too many requests just now – wait a moment and try again.':c==='not_granted'?'Permission to read drawings was not granted.':('Could not read the drawing: '+((e&&e.message)||'unknown error')),'s-fail');
+  }finally{drawBusy=false;$('drawGo').disabled=!drawBlob}
+}
+async function takeFile(f){
+  drawBlob=null;$('drawGo').disabled=true;
+  if(!f){$('drawPrev').style.display='none';return}
+  try{
+    drawBlob=await shrinkImage(f);
+    const pv=$('drawPrev');pv.src=URL.createObjectURL(drawBlob);pv.style.display='block';
+    $('drawGo').disabled=false;drawMsg('Picture loaded – press "Read drawing".');
+  }catch(err){drawMsg('Could not open that image.','s-fail')}
+}
+['drawFile','drawCam'].forEach(id=>$(id).addEventListener('change',e=>{takeFile(e.target.files&&e.target.files[0]);e.target.value=''}));
+document.addEventListener('paste',e=>{
+  if($('photoBox').style.display==='none')return;
+  const items=[...(e.clipboardData&&e.clipboardData.items||[])].filter(i=>i.kind==='file'&&/^image\//.test(i.type));
+  if(!items.length)return;
+  e.preventDefault();takeFile(items[0].getAsFile());
+  $('drawPaste').textContent='Or tap and hold here, then Paste a picture';
+});
+$('drawPaste').addEventListener('beforeinput',e=>{if(e.inputType!=='insertFromPaste')e.preventDefault()});
+$('drawGo').onclick=readDrawing;
+
+
+/* ---------- events ---------- */
+let timer=null;
+const later=()=>{clearTimeout(timer);timer=setTimeout(calc,180)};
+function setUnitLabels(){document.querySelectorAll('.uu').forEach(e=>e.textContent=curUnit)}
+
+document.addEventListener('input',e=>{
+  if(e.target.id==='mat'||e.target.id==='unit'||e.target.name==='mode'||e.target.id==='imp')return;
+  if(e.target.classList.contains('sbend')||e.target.classList.contains('sside'))return;
+  later();
+});
+document.addEventListener('focusin',e=>{const t=e.target;
+  if(t&&t.dataset&&t.dataset.i!==undefined&&(t.classList.contains('plen')||t.classList.contains('pang')))setSel(+t.dataset.i);
+  else if(selRow>=0&&!(t.closest&&(t.closest('#ptable')||t.closest('#selBtns'))))setSel(-1)});
+document.addEventListener('click',e=>{if(e.target&&e.target.id==='useBestBtn'){const wasMan=mode==='manual',hadSupp=Object.values(supp).some(Boolean);if(wasMan)setMode('auto');supp={};suppUser={};autoPick('Recalculated'+(wasMan?' (manual sequence reset to automatic)':'')+(hadSupp?' (finger set back to back gauge)':'')+'.',(t,c)=>{const m=$('recalcMsg');if(m){m.textContent=t;m.className='note'+(c?' '+c:'')}},true)}});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='imp')return; /* leaving the box (e.g. tapping Load rows) must not refresh it from the profile first */
+  if(t.id==='selDH'){sel.dholder=t.value;saveTools();applyTools();calc();return}
+  if(t.id==='selH'){sel.holder=t.value;saveTools();applyTools();calc();return}
+  if(t.id==='selP'||t.id==='selD'){
+    sel[t.id==='selP'?'punch':'die']=t.value;saveTools();$('autoKeep').checked=false;akSave(false);applyTools();calc();return;
+  }
+  if(t.id==='nt_type'){ntNote();return}
+  if(t.id==='mat'){const pr=PRESETS[t.value];if(pr){$('TS').value=pr.TS;$('sb').value=pr.sb}calc();return}
+  if(t.id==='unit'){
+    readProfile();
+    const from=curUnit,to=t.value,f=(from==='in'&&to==='mm')?25.4:(from==='mm'&&to==='in')?1/25.4:1;
+    rows.forEach(r=>{r.len=round(r.len*f,to)});
+    ['t','L','reqR'].forEach(id=>{const v=num(id);if(v!==null)$(id).value=round(v*f,to)});
+    curUnit=to;setUnitLabels();renderProfile();calc();return;
+  }
+  if(t.name==='mode'){setMode(t.value);return}
+  if(t.classList.contains('sbend')||t.classList.contains('sside')){
+    document.querySelectorAll('.sbend').forEach(e2=>{man.order[+e2.dataset.k]=+e2.value});
+    document.querySelectorAll('.sside').forEach(e2=>{man.side[+e2.dataset.k]=(e2.value==='B')});
+    calc();return;
+  }
+  calc();
+});
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.classList&&t.classList.contains('useTool')){
+    sel.punch=toolsOf('punch')[+t.dataset.p].name;sel.die=toolsOf('die')[+t.dataset.d].name;
+    saveTools();fillSelects();applyTools();calc();return;
+  }
+  if(t.classList&&t.classList.contains('del')){
+    readProfile();rows.splice(+t.dataset.i,1);
+    if(rows.length>0)rows[0].ang=null;
+    resetManual();renderProfile();calc();
+  }
+});
+$('addRowStart').onclick=()=>{readProfile();rows.unshift({len:NaN,ang:null});if(rows.length>1&&(rows[1].ang===null||rows[1].ang===undefined))rows[1].ang=90;resetManual();renderProfile();calc()};
+function insertRow(below){
+  readProfile();const i=selRow;if(!(i>=0&&i<rows.length))return;
+  const at=below?i+1:i;
+  rows.splice(at,0,{len:NaN,ang:at===0?null:90});
+  if(at===0&&rows.length>1&&(rows[1].ang===null||rows[1].ang===undefined||isNaN(rows[1].ang)))rows[1].ang=90;
+  selRow=at;resetManual();renderProfile();calc();
+  const e=document.querySelector(`.plen[data-i="${at}"]`);if(e)e.focus();
+}
+$('addAbove').onclick=()=>insertRow(false);
+$('addBelow').onclick=()=>insertRow(true);
+$('addRow').onclick=()=>{readProfile();rows.push({len:NaN,ang:NaN});resetManual();renderProfile();calc()};
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='imp')impDirty=true});
+$('impBtn').onclick=()=>{
+  const nr=[];
+  $('imp').value.split(/\n+/).forEach(l=>{
+    const m=l.trim().split(/[\s,;\t]+/).map(parseFloat).filter(x=>!isNaN(x));
+    if(m.length>=1)nr.push({len:m[0],ang:nr.length===0?null:(m[1]!==undefined?m[1]:90)});
+  });
+  if(nr.length>=2){impDirty=false;rows=nr;resetManual();renderProfile();calc()}
+};
+
+$('impPick').onclick=async()=>{
+  $('impBtn').click();
+  const say=(t,c)=>{const e=$('impMsg');e.textContent=t;e.className='note'+(c?' '+c:'')};
+  if(rows.length<2){say('Enter at least two lines.','s-fail');return}
+  await autoPick('Loaded '+rows.length+' legs.',say);
+};
+$('sugBtn').onclick=suggestTools;
+$('impCopy').onclick=async()=>{
+  impDirty=false;
+  try{readProfile()}catch(e){}
+  const txt=rowsText();
+  const m=$('impMsg');
+  try{await navigator.clipboard.writeText(txt);m.textContent='Copied '+rows.length+' rows.'}
+  catch(e){$('imp').value=txt;$('imp').select();m.textContent='Copy blocked here – the rows are in the box above, select and copy them.'}
+};
+
+$('nt_add').onclick=()=>{
+  const k=$('nt_type').value,name=$('nt_name').value.trim();
+  const ang=parseFloat($('nt_ang').value),h=parseFloat($('nt_h').value),mx=parseFloat($('nt_max').value),V=parseFloat($('nt_v').value);
+  const out=$('nt_out').value.trim();
+  if(!name)return ntMsg('Enter a name.',true);
+  if(toolsOf(k).some(t=>t.name===name))return ntMsg('A '+k+' with that name already exists.',true);
+  if(!(ang>0&&ang<180))return ntMsg('Enter the tool angle (0–180°).',true);
+  if(!(h>0))return ntMsg('Enter the tool height.',true);
+  if(k==='punch'&&!(mx>0))return ntMsg('Enter the punch max load (kN/m).',true);
+  if(k==='die'&&!(V>0))return ntMsg('Enter the V opening.',true);
+  if(out&&!parsePts(out))return ntMsg('Outline needs at least 3 valid x,y points (or leave it empty to skip collision checks for this tool).',true);
+  const tool=k==='punch'?{name,angle:ang,height:h,maxLoad:mx,mirror:false,outline:out}:{name,V,angle:ang,height:h,maxLoad:mx>0?mx:null,outline:out};
+  userTools[k].push(tool);sel[k]=name;saveTools();fillSelects();applyTools();calc();
+  ntMsg('Added "'+name+'" and selected it.');
+  $('nt_name').value='';
+};
+function removeSel(k){
+  const n=sel[k];
+  if(isBuiltin(k,n))return ntMsg('Built-in tools cannot be removed.',true);
+  userTools[k]=userTools[k].filter(t=>t.name!==n);saveTools();fillSelects();applyTools();calc();ntMsg('Removed "'+n+'".');
+}
+$('nt_delP').onclick=()=>removeSel('punch');
+$('nt_delD').onclick=()=>removeSel('die');
+$('nt_exp').onclick=async()=>{
+  const txt=JSON.stringify(userTools,null,1);
+  try{await navigator.clipboard.writeText(txt);ntMsg('Copied.')}catch(e){ntMsg('Copy blocked here – select the text below instead.',true);$('nt_out').value=txt}
+};
+
+$('copy').onclick=async()=>{
+  const m=$('copied');
+  try{await navigator.clipboard.writeText(lastSummary);m.textContent='Copied.'}
+  catch(e){m.textContent='Copy blocked here – select the results text instead.'}
+};
+
+/* ---------- saved bends: the whole page (material, profile, tools, sequence) under a name.
+   Kept in the viewer's own private space in the artifact database when signed in (same list on phone and PC),
+   and always also in this browser as a fallback. ---------- */
+const SB_SKIP=new Set(['imp','sbName','drawCam','drawFile','drawPaste','punchPts','diePts']);
+function sbSnapshot(){
+  readProfile();
+  const f={};
+  document.querySelectorAll('input[id],select[id],textarea[id]').forEach(e=>{
+    if(SB_SKIP.has(e.id)||e.type==='file'||e.closest('#savedCard')||/^nt_/.test(e.id))return;
+    f[e.id]=e.type==='checkbox'?(e.checked?'1':'0'):e.value;
+  });
+  const mine=['punch','die'].map(k=>userTools[k].find(t=>t.name===sel[k])).filter(Boolean);
+  return {v:1,unit:curUnit,f,rows:JSON.parse(JSON.stringify(rows)),sel:{...sel},mode,
+    man:{order:man.order.slice(),side:man.side.slice()},supp:{...supp},suppUser:{...suppUser},tools:mine};
+}
+function sbApply(st){
+  if(!st||!st.f)throw new Error('bad');
+  (st.tools||[]).forEach(t=>{const k=('V' in t)?'die':'punch';if(!toolsOf(k).some(x=>x.name===t.name)){userTools[k].push(t)}});
+  saveTools();
+  Object.assign(sel,st.sel||{});
+  curUnit=st.unit||'mm';if($('unit'))$('unit').value=curUnit;
+  fillSelects();applyTools();
+  Object.entries(st.f).forEach(([id,v])=>{const e=$(id);if(!e||id==='unit')return;if(e.type==='checkbox')e.checked=v==='1';else e.value=v});
+  setUnitLabels();
+  rows=st.rows||rows;
+  mode=st.mode==='manual'?'manual':'auto';
+  document.querySelectorAll('input[name=mode]').forEach(r=>r.checked=(r.value===mode));
+  man={order:(st.man&&st.man.order)||[],side:(st.man&&st.man.side)||[]};
+  if(man.order.length!==rows.length-1)resetManual();
+  supp=st.supp||{};suppUser=st.suppUser||{};
+  selRow=-1;impDirty=false;
+  renderProfile();saveState();calc();
+}
+const sbKey=n=>n.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,60)||'bend';
+const sbSay=(t,c)=>{const e=$('sbMsg');e.textContent=t;e.className='note'+(c?' '+c:'')};
+async function sbAll(){
+  try{await rpc('list_bends',{},true)}catch(e){sbSay('Could not reach the database – '+((e&&e.message)||'error'),'warn');return {}}
+  const all={};(ARGS.store.bends||[]).forEach(r=>{all[r.key]=Object.assign({},r,{where:'database'})});
+  return all;
+}
+$('sbSave').onclick=()=>{$('sbList').hidden=true;$('sbSaveBox').hidden=false;const n=$('sbName');
+  if(!n.value){const p=readParams();n.value=`${rows.length-1} bends · ${p.t} ${curUnit} · ${sel.punch} / ${sel.die}`}n.focus();n.select()};
+$('sbSaveX').onclick=()=>{$('sbSaveBox').hidden=true};
+$('sbName').addEventListener('keydown',e=>{if(e.key==='Enter')$('sbSaveGo').click()});
+$('sbSaveGo').onclick=async()=>{
+  const name=$('sbName').value.trim();if(!name){sbSay('Type a name first.','warn');return}
+  const k=sbKey(name),rec={name,at:Date.now(),state:sbSnapshot()};
+  let okD=false,why='';
+  try{await rpc('save_bend',{key:k,rec},true);okD=true}catch(e){why=(e&&e.message)||''}
+  $('sbSaveBox').hidden=true;
+  sbSay(okD?`Saved "${name}" to the database – it shows in Load bend on any device.`:('Could not save to the database. '+why),okD?'':'warn');
+};
+$('sbLoad').onclick=async()=>{
+  $('sbSaveBox').hidden=true;const L=$('sbList');L.hidden=false;L.innerHTML='<div class="note">Loading…</div>';
+  const all=await sbAll(),ks=Object.keys(all).sort((a,b)=>(all[b].at||0)-(all[a].at||0));
+  if(!ks.length){L.innerHTML='<div class="note">No saved bends yet.</div>';return}
+  L.innerHTML='';
+  ks.forEach(k=>{const r=all[k];
+    const row=document.createElement('div');row.className='sbrow';
+    const nm=document.createElement('div');nm.className='nm';nm.textContent=r.name||k;
+    const sm=document.createElement('small');sm.textContent=new Date(r.at||0).toLocaleString()+' · '+r.where;nm.appendChild(sm);
+    const lb=document.createElement('button');lb.className='sm pri';lb.textContent='Load';
+    lb.onclick=()=>{try{sbApply(r.state);L.hidden=true;$('sbName').value=r.name||'';sbSay(`Loaded "${r.name}".`);scrollTop0()}catch(e){sbSay('That save could not be loaded.','warn')}};
+    const db=document.createElement('button');db.className='sm';db.textContent='Delete';
+    db.onclick=async()=>{if(db.dataset.sure!=='1'){db.dataset.sure='1';db.textContent='Sure?';return}
+      try{await rpc('delete_bend',{key:k},true)}catch(e){sbSay('Could not delete: '+((e&&e.message)||''),'warn');return}
+      row.remove();sbSay(`Deleted "${r.name}".`)};
+    row.append(nm,lb,db);L.appendChild(row);
+  });
+};
+
+/* New: an empty page for a new part (machine settings and the tool library stay). A page refresh still opens the default example part. */
+$('sbNew').onclick=()=>{
+  const st=$('sbNew');if(st.dataset.sure!=='1'){st.dataset.sure='1';st.textContent='Clear the page?';setTimeout(()=>{st.dataset.sure='';st.textContent='🆕 New'},4000);return}
+  st.dataset.sure='';st.textContent='🆕 New';
+  $('mat').value='ss';const pr=PRESETS.ss;$('TS').value=pr.TS;$('sb').value=pr.sb;
+  ['t','L','reqR'].forEach(id=>{const e=$(id);if(e)e.value=''});
+  rows=[{len:NaN,ang:null},{len:NaN,ang:NaN}];
+  mode='auto';document.querySelectorAll('input[name=mode]').forEach(r=>r.checked=(r.value===mode));
+  supp={};suppUser={};selRow=-1;impDirty=false;
+  const im=$('imp');if(im)im.value='';
+  drawBlob=null;$('drawGo').disabled=true;const dp=$('drawPrev');if(dp){dp.style.display='none';dp.removeAttribute('src')}$('drawMsg').textContent='';
+  $('sbName').value='';$('sbSaveBox').hidden=true;$('sbList').hidden=true;
+  resetManual();renderProfile();calc();
+  sbSay('New part – fill in the material and profile.');
+  const e=document.querySelector('.plen[data-i="0"]');if(e)e.focus();
+};
+
+window.__boot=function(){
+if(ARGS.aiEnabled)$('photoBox').style.display='block';
+loadTools();
+fillSelects();
+loadState();
+applyTools();
+ntNote();
+setUnitLabels();
+if(man.order.length!==rows.length-1)resetManual();
+document.querySelectorAll('input[name=mode]').forEach(r=>r.checked=(r.value===mode));
+renderProfile();
+calc();
+$('autoKeep').addEventListener('change',()=>akSave($('autoKeep').checked));
+/* on opening: unless the tools were picked by hand, make sure the saved tools follow the shop rules (BIU punches and ES dies first, 9.75in gooseneck last) */
+setTimeout(async()=>{
+  /* every time the page opens the tools follow the priority list again; a hand-picked punch or die only lasts for that visit */
+  if(mode!=='auto'||$('sugBtn').disabled||sugBusy||drawBusy)return;
+  await autoPick('Tools picked on opening by the priority list.',(t,c)=>{const e=$('keepMsg');e.textContent=t;e.className='note'+(c?' '+c:'')},true);
+},600);
+
+};
+</script>
+</body>
+</html>
