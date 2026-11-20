@@ -11,17 +11,16 @@ This is the **Bend Finder** artifact moved to Streamlit with a Neon (Postgres) d
 |---|---|
 | Calculation engine + dashboard (unchanged logic, same UI) | `bend_component/index.html`, hosted as a bidirectional Streamlit component |
 | Persistence: settings, tool library/selection, saved bends | `db.py` → Neon (`bf_kv`, `bf_bends` tables, created automatically) |
-| Photo of a drawing → legs and angles (optional) | `vision.py` → Claude vision |
 | Glue (component ↔ Python requests) | `app.py` |
 
-The only differences from the artifact: browser storage / the artifact database are replaced by Neon,
-and the photo reader calls the Anthropic API from the server.
+Differences from the artifact: browser storage / the artifact database are replaced by Neon, and the
+"start from a photo of the drawing" feature is left out (it needs a paid API key outside Claude).
 
 ## Run locally
 
 ```bash
 pip install -r requirements.txt
-cp .streamlit/secrets.toml.example .streamlit/secrets.toml   # fill in DATABASE_URL (and optionally ANTHROPIC_API_KEY)
+cp .streamlit/secrets.toml.example .streamlit/secrets.toml   # fill in DATABASE_URL
 streamlit run app.py
 ```
 

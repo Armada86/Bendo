@@ -1862,7 +1862,7 @@ $('sbNew').onclick=()=>{
 };
 
 window.__boot=function(){
-$('photoBox').style.display='block';if(!ARGS.aiEnabled)drawMsg('Reading drawings needs ANTHROPIC_API_KEY in the app secrets – you can still load a picture.');
+/* photo reading is not part of the Streamlit version: #photoBox stays hidden */
 loadTools();
 fillSelects();
 loadState();

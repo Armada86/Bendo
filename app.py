@@ -1,7 +1,7 @@
 """Bend Finder – Streamlit app.
 
 The calculation engine and dashboard are the original Bend Finder page (bend_component/index.html),
-hosted as a bidirectional Streamlit component. Python handles persistence (Neon) and photo reading.
+hosted as a bidirectional Streamlit component. Python handles persistence (Neon).
 """
 from pathlib import Path
 
@@ -9,7 +9,6 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import db
-import vision
 
 st.set_page_config(page_title="Bend Finder", page_icon="📐", layout="centered")
 st.markdown(
@@ -45,7 +44,6 @@ with st.sidebar:
         st.success("Connected to Neon")
     else:
         st.warning(db_error or "No DATABASE_URL set – using temporary in-memory storage.")
-    st.caption("Photo reading: " + ("on" if vision.enabled() else "off (set ANTHROPIC_API_KEY)"))
 
 ss = st.session_state
 if ss.get("loaded_ws") != ws:
@@ -77,8 +75,6 @@ def handle(req):
             store.delete_bend(ws, p["key"])
             ss["store"]["bends"] = store.list_bends(ws)
             return {"id": rid}
-        if kind == "read_drawing":
-            return {"id": rid, "result": vision.read_drawing(p["prompt"], p["image"])}
         return {"id": rid, "error": f"unknown request {kind}"}
     except Exception as e:  # sent back to the page and shown there
         return {"id": rid, "error": str(e)}
@@ -86,7 +82,7 @@ def handle(req):
 
 req = bend_finder(
     store=ss["store"],
-    aiEnabled=vision.enabled(),
+    aiEnabled=False,
     resp=ss.get("resp"),
     key=f"bf-{ws}",
     default=None,
